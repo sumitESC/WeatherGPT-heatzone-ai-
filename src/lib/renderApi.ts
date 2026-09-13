@@ -194,3 +194,81 @@ export async function fetchIndiaSentinelContext(date?: string): Promise<IndiaSen
   const res = await fetch(url);
   return handleResponse<IndiaSentinelContextResponse>(res, 'fetchIndiaSentinelContext');
 }
+
+// Live Updates & Multi-Alert Payload Interfaces
+
+export interface LiveAlertItem {
+  id: string;
+  city: string;
+  alert_type: 'HEAT' | 'RAIN' | 'WIND' | 'HUMIDITY' | 'CORRIDOR';
+  severity: 'RED' | 'ORANGE' | 'YELLOW' | 'GREEN';
+  title: string;
+  message: string;
+  metric: string;
+  date: string;
+}
+
+export interface LiveAlertSummary {
+  total_active_alerts: number;
+  heat_alerts_count: number;
+  rain_alerts_count: number;
+  wind_alerts_count: number;
+  humidity_alerts_count: number;
+  corridor_alerts_count: number;
+}
+
+export interface LiveCityUpdateItem {
+  city: string;
+  date: string;
+  temp_max_c: number;
+  temp_min_c: number;
+  precipitation_mm: number;
+  rain_probability_pct: number;
+  humidity_pct: number;
+  wind_speed_kmh: number;
+  heat_risk_score: number;
+  heat_zone: string;
+  primary_driver: string;
+}
+
+export interface LiveUpdateResponse {
+  status: string;
+  timestamp: string;
+  base_date: string;
+  total_cities_monitored: number;
+  filter?: {
+    city?: string;
+    alert_type?: string;
+  };
+  summary: LiveAlertSummary;
+  alerts: LiveAlertItem[];
+  live_city_updates: LiveCityUpdateItem[];
+  background_task?: {
+    status: string;
+    last_synced: string;
+    manual_trigger_endpoint: string;
+  };
+}
+
+/**
+ * 10. GET /api/v1/weather/live-update - Real-Time Live Weather & Multi-Alert Stream (Heat, Rain, Wind, Humidity, Corridors)
+ */
+export async function fetchLiveUpdates(city?: string, alertType?: string): Promise<LiveUpdateResponse> {
+  const params = new URLSearchParams();
+  if (city) params.append('city', city);
+  if (alertType) params.append('alert_type', alertType);
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  const url = `${RENDER_BACKEND_URL}/api/v1/weather/live-update${queryString}`;
+  const res = await fetch(url);
+  return handleResponse<LiveUpdateResponse>(res, 'fetchLiveUpdates');
+}
+
+/**
+ * 11. POST /api/v1/weather/live-update - Trigger manual live data refresh in background
+ */
+export async function triggerLiveUpdate(): Promise<{ status: string; timestamp: string; message: string }> {
+  const url = `${RENDER_BACKEND_URL}/api/v1/weather/live-update`;
+  const res = await fetch(url, { method: 'POST' });
+  return handleResponse<{ status: string; timestamp: string; message: string }>(res, 'triggerLiveUpdate');
+}
+

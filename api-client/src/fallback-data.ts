@@ -210,10 +210,10 @@ export function getFallbackCityDataset(cityId: number): CityDataset {
   const weatherHistory: WeatherData[] = [];
   const heatHistory: HeatPrediction[] = [];
 
+  const nowMs = Date.now();
   for (let i = 0; i < 7; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const iso = date.toISOString();
+    const hoursAgo = (6 - i) * 4;
+    const iso = new Date(nowMs - hoursAgo * 3600 * 1000).toISOString();
 
     weatherHistory.push({
       ...latestWeather,

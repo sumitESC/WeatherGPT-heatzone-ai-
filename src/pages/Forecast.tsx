@@ -542,7 +542,13 @@ function MLHistoryView({ city }: { city: string }) {
   if (error) return <div className="p-6 mt-6 text-red-400 text-center bg-red-500/10 rounded-2xl border border-red-500/20">{error}</div>;
   if (!data?.data?.length) return <div className="p-12 mt-6 text-muted-foreground text-center bg-card border border-border/50 rounded-2xl">No historical data found.</div>;
 
-  const chartData = data.data.map((d: any) => ({
+  const sortedData = [...data.data].sort((a, b) => {
+    const dA = a.Date || a.date;
+    const dB = b.Date || b.date;
+    return parseISO(dA).getTime() - parseISO(dB).getTime();
+  });
+
+  const chartData = sortedData.map((d: any) => ({
     date: format(parseISO(d.Date || d.date), "MMM dd"),
     tempMax: d.Temp_Max_C || d.max_temp_c,
     tempMin: d.Temp_Min_C || d.min_temp_c,

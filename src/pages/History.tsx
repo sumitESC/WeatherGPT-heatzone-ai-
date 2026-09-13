@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useGetCities } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Activity, Database, Loader2, ThermometerSun, Droplets, Leaf, Factory, Layers } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   LineChart,
   Line,
@@ -136,8 +136,14 @@ export default function HistoryPage() {
     fetchHistory();
   }, [selectedCity, startDate, endDate]);
 
-  const chartData = historyData.map(record => ({
-    date: record.Date ? format(new Date(record.Date), "MMM yyyy") : `${record.month}/${record.year}`,
+  const sortedHistoryData = [...historyData].sort((a, b) => {
+    const d1 = a.Date ? parseISO(a.Date).getTime() : new Date(`${a.year}-${a.month}-01`).getTime();
+    const d2 = b.Date ? parseISO(b.Date).getTime() : new Date(`${b.year}-${b.month}-01`).getTime();
+    return d1 - d2;
+  });
+
+  const chartData = sortedHistoryData.map(record => ({
+    date: record.Date ? format(parseISO(record.Date), "MMM dd, yyyy") : `${record.month}/${record.year}`,
     maxTemp: parseFloat(record.max_temp_c) || 0,
     minTemp: parseFloat(record.min_temp_c) || 0,
     avgTemp: parseFloat(record.avg_temp_c) || 0,
@@ -423,7 +429,7 @@ export default function HistoryPage() {
                 {historyData.map((record, i) => (
                   <div key={i} className="p-3 bg-secondary/30 rounded-xl border border-border/50 text-sm">
                     <div className="flex justify-between font-semibold mb-2">
-                      <span>{record.Date ? format(new Date(record.Date), "MMM yyyy") : `${record.month}/${record.year}`}</span>
+                      <span>{record.Date ? format(parseISO(record.Date), "MMM dd, yyyy") : `${record.month}/${record.year}`}</span>
                       <span className="text-orange-500">{parseFloat(record.max_temp_c).toFixed(1)}°C Max</span>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-muted-foreground text-xs">

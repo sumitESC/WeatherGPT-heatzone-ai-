@@ -535,6 +535,7 @@ async function seed() {
         builtUpRatio: heat.builtUpRatio,
         coolingIndex: heat.coolingIndex,
         trafficHeatFactor: heat.trafficHeatFactor,
+        predictedAt: recordedAt,
       });
     }
 

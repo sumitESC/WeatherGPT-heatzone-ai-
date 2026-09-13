@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useGetDashboardOverview, useGetAllHeatPredictions, getFallbackOverview, FALLBACK_CITIES, getFallbackHeatPrediction } from "@workspace/api-client-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
-import { ArrowRight, ChevronLeft, ChevronRight, Flame, CloudRain, AlertTriangle, Radio } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Flame, CloudRain, AlertTriangle, Radio, RefreshCw, Wind, Droplets } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { HeatZoneBadge } from "@/components/HeatZoneBadge";
 import { format } from "date-fns";
@@ -321,13 +321,109 @@ export default function Dashboard() {
 function LiveClimateTicker({ predictions, overview }: { predictions: any[]; overview: any }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [liveData, setLiveData] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
+  // Fetch real-time live-update from backend route /api/v1/live-update or /api/v1/weather/live-update
+  const fetchLiveUpdates = async () => {
+    try {
+      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+      let res = await fetch(`${RENDER_BASE}/api/v1/live-update`);
+      if (!res.ok) {
+        res = await fetch(`${RENDER_BASE}/api/v1/weather/live-update`);
+      }
+      if (!res.ok) {
+        res = await fetch('/api/v1/live-update');
+      }
+      if (res.ok) {
+        const json = await res.json();
+        setLiveData(json);
+      }
+    } catch (err) {
+      console.warn("Live update API route unreachable, using synthesized alerts", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveUpdates();
+    const timer = setInterval(fetchLiveUpdates, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const triggerManualUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+      let res = await fetch(`${RENDER_BASE}/api/v1/live-update`, { method: "POST" });
+      if (!res.ok) {
+        res = await fetch(`${RENDER_BASE}/api/v1/weather/live-update`, { method: "POST" });
+      }
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      await fetchLiveUpdates();
+    } catch (e) {
+      console.warn("Manual update trigger error:", e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const liveAlerts = useMemo(() => {
+    // Priority 1: Backend API Live Updates (/api/v1/live-update or /api/v1/weather/live-update)
+    if (liveData?.alerts && Array.isArray(liveData.alerts) && liveData.alerts.length > 0) {
+      return liveData.alerts.map((a: any) => {
+        const cityMatch = predictions?.find(p => p.cityName.toLowerCase() === (a.city || "").toLowerCase());
+        const cityId = cityMatch ? cityMatch.cityId : (predictions[0]?.cityId || 1);
+        
+        let icon = Flame;
+        let badgeColor = "bg-red-500/20 text-red-400 border-red-500/30";
+        let bgGradient = "from-red-500/15 via-orange-500/10 to-transparent";
+
+        const type = (a.alert_type || "").toUpperCase();
+        const sev = (a.severity || "").toUpperCase();
+
+        if (type === "RAIN") {
+          icon = CloudRain;
+          badgeColor = sev === "RED" ? "bg-blue-600/30 text-blue-300 border-blue-500/40" : "bg-blue-500/20 text-blue-400 border-blue-500/30";
+          bgGradient = "from-blue-500/15 via-cyan-500/10 to-transparent";
+        } else if (type === "WIND") {
+          icon = Wind;
+          badgeColor = "bg-purple-500/20 text-purple-400 border-purple-500/30";
+          bgGradient = "from-purple-500/15 via-indigo-500/10 to-transparent";
+        } else if (type === "HUMIDITY") {
+          icon = Droplets;
+          badgeColor = "bg-sky-500/20 text-sky-400 border-sky-500/30";
+          bgGradient = "from-sky-500/15 via-blue-500/10 to-transparent";
+        } else if (type === "CORRIDOR") {
+          icon = Radio;
+          badgeColor = "bg-amber-500/20 text-amber-400 border-amber-500/30";
+          bgGradient = "from-amber-500/15 via-yellow-500/10 to-transparent";
+        } else {
+          // HEAT
+          icon = Flame;
+          badgeColor = sev === "RED" ? "bg-red-600/30 text-red-300 border-red-500/40" : "bg-orange-500/20 text-orange-400 border-orange-500/30";
+          bgGradient = "from-red-500/15 via-orange-500/10 to-transparent";
+        }
+
+        return {
+          cityId,
+          cityName: a.city || "Regional",
+          category: type.toLowerCase(),
+          title: a.title || `REALTIME ALERT — ${a.city}`,
+          subtitle: a.message || a.metric || "Live monitoring update active.",
+          tag: a.alert_type || "LIVE ALERT",
+          badgeColor,
+          bgGradient,
+          icon
+        };
+      });
+    }
+
+    // Priority 2: Fallback Client Synthesis if API not loaded
     if (!predictions || predictions.length === 0) return [];
     
-    const alerts: { cityId: number; cityName: string; category: "heat" | "rain" | "exhaust" | "green"; title: string; subtitle: string; tag: string; badgeColor: string; bgGradient: string; icon: any }[] = [];
+    const alerts: { cityId: number; cityName: string; category: string; title: string; subtitle: string; tag: string; badgeColor: string; bgGradient: string; icon: any }[] = [];
 
-    // 1. Extreme Heat Cities
+    // Extreme Heat Cities
     predictions.filter(c => c.heatZone === "extreme" || c.heatRiskScore >= 65).forEach(c => {
       alerts.push({
         cityId: c.cityId,
@@ -342,7 +438,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
       });
     });
 
-    // 2. High Humidity / Heavy Rainfall Cities
+    // High Humidity / Heavy Rainfall Cities
     predictions.filter(c => (c.humidity && c.humidity >= 65) || (c.rainfall && c.rainfall > 0)).forEach(c => {
       alerts.push({
         cityId: c.cityId,
@@ -357,7 +453,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
       });
     });
 
-    // 3. High Vehicle & Thermal Exhaust Cities
+    // High Vehicle & Thermal Exhaust Cities
     predictions.filter(c => c.vehicleDensity && c.vehicleDensity > 12000).forEach(c => {
       alerts.push({
         cityId: c.cityId,
@@ -388,7 +484,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
     }
 
     return alerts;
-  }, [predictions, overview]);
+  }, [liveData, predictions, overview]);
 
   useEffect(() => {
     if (isPaused || liveAlerts.length <= 1) return;
@@ -424,7 +520,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
               </span>
               <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                LIVE REAL-TIME DATA
+                LIVE REAL-TIME ROUTE ACTIVE (/api/v1/live-update)
               </span>
             </div>
 
@@ -450,6 +546,16 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
 
         {/* Controls & Inspect Link */}
         <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+          <button
+            onClick={triggerManualUpdate}
+            disabled={isUpdating}
+            className="p-2 bg-secondary/60 hover:bg-secondary border border-border/60 rounded-xl text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-xs font-semibold"
+            title="Trigger Live Update Scan"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? "animate-spin text-primary" : ""}`} />
+            <span className="hidden md:inline">{isUpdating ? "Syncing..." : "Sync Live"}</span>
+          </button>
+
           <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-xl border border-border/50">
             <button
               onClick={() => setCurrentIndex(prev => (prev - 1 + liveAlerts.length) % liveAlerts.length)}

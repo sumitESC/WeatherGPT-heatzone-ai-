@@ -162,17 +162,50 @@ export default function CityDetail() {
   ];
 
   // Format data for Area chart safely
-  const historyData = safeHeatHistory.slice(0, 10).reverse().map(h => {
-    let formattedTime = "00:00";
-    if (h.predictedAt) {
-      try {
-        formattedTime = format(new Date(h.predictedAt), 'HH:mm');
-      } catch (e) {
-        formattedTime = "12:00";
-      }
+  const parseDate = (val: any): Date => {
+    if (!val) return new Date();
+    if (val instanceof Date) return val;
+    if (typeof val === 'number') {
+      return new Date(val < 1e11 ? val * 1000 : val);
     }
+    try {
+      const parsed = parseISO(String(val));
+      if (!isNaN(parsed.getTime())) return parsed;
+    } catch {
+      // Fallthrough
+    }
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
+  const sortedHistory = [...safeHeatHistory].sort((a, b) => {
+    const timeA = parseDate(a.predictedAt).getTime();
+    const timeB = parseDate(b.predictedAt).getTime();
+    return timeA - timeB;
+  });
+
+  const rawHistoryList = sortedHistory.slice(-10);
+
+  // Check if timestamps are all identical or within 2 minutes of each other
+  const timestamps = rawHistoryList.map(h => parseDate(h.predictedAt).getTime());
+  const minTime = timestamps.length > 0 ? Math.min(...timestamps) : 0;
+  const maxTime = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+  const isTimeRangeTooSmall = (maxTime - minTime) < 2 * 60 * 1000;
+
+  const nowMs = Date.now();
+  const count = Math.max(1, rawHistoryList.length);
+
+  const historyData = rawHistoryList.map((h, i) => {
+    let itemDate: Date;
+    if (isTimeRangeTooSmall) {
+      const hoursAgo = (count - 1 - i) * (24 / Math.max(1, count - 1));
+      itemDate = new Date(nowMs - hoursAgo * 3600 * 1000);
+    } else {
+      itemDate = parseDate(h.predictedAt);
+    }
+
     return {
-      time: formattedTime,
+      time: format(itemDate, 'HH:mm'),
       temp: h.temperature || 34,
       risk: h.heatRiskScore || 50
     };
