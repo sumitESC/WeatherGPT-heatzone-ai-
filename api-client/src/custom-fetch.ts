@@ -370,9 +370,10 @@ export async function customFetch<T = unknown>(
     }
   } catch (e) {}
 
-  // API Interceptor for Live Render ML Model
+  // API Interceptor for Live Backend ML Model
   try {
-    const RENDER_BASE = "https://heatzone-backend.onrender.com/api/v1";
+    const backendHost = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+    const RENDER_BASE = `${backendHost}/api/v1`;
     const dataSource = localStorage.getItem('heatzone_datasource') || 'ML_MODEL';
     
     if (typeof input === 'string') {

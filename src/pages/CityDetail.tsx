@@ -89,7 +89,7 @@ export default function CityDetail() {
     const fetchForecast = async () => {
       setLoadingForecast(true);
       try {
-        const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+        const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const res = await fetch(`${RENDER_BASE}/api/v1/weather/${encodeURIComponent(data.city.name)}/forecast`);
         if (res.ok) {
           const json = await res.json();
@@ -294,8 +294,8 @@ export default function CityDetail() {
             {cityForecast.map((f, idx) => {
               const maxT = Math.round(f.Temp_Max_C ?? f.tempMax ?? 34);
               const minT = Math.round(f.Temp_Min_C ?? f.tempMin ?? 24);
-              const rain = f.Precipitation_mm ?? f.rainfall ?? 0;
-              const hum = f.Humidity_Mean_pct ?? f.humidity ?? 55;
+              const rain = Math.round((f.Precipitation_mm ?? f.rainfall ?? 0) * 10) / 10;
+              const hum = Math.round(f.Humidity_Mean_pct ?? f.humidity ?? 55);
               const display = getWeatherDisplay(f);
               
               let dateLabel = `Day ${idx + 1}`;
@@ -473,7 +473,7 @@ export default function CityDetail() {
 
               <div className="bg-secondary/30 p-3 rounded-xl">
                 <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Droplets className="w-3.5 h-3.5 text-sky-400"/> Humidity</p>
-                <p className="text-lg font-bold text-foreground">{latestWeather?.humidity || 55}%</p>
+                <p className="text-lg font-bold text-foreground">{Math.round(latestWeather?.humidity || 55)}%</p>
               </div>
 
               <div className="bg-secondary/30 p-3 rounded-xl">

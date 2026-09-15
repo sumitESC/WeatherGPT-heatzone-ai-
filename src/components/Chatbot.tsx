@@ -305,7 +305,8 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
 async function fetchCurrentWeather(city: string): Promise<SynthesizedHeatData> {
   const coords = CITY_COORDINATES[city.toLowerCase()] || { lat: 25.3176, lng: 82.9739 };
   try {
-    const res = await fetch(`https://heatzone-backend.onrender.com/api/v1/weather/${encodeURIComponent(city)}/current`);
+    const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const res = await fetch(`${RENDER_BASE}/api/v1/weather/${encodeURIComponent(city)}/current`);
     if (res.ok) {
       const data = await res.json();
       const curr = data.current || data;
@@ -331,7 +332,7 @@ async function fetchCurrentWeather(city: string): Promise<SynthesizedHeatData> {
       };
     }
   } catch (err) {
-    console.warn("Render backend current weather fetch failed, using local fallback", err);
+    console.warn("Backend current weather fetch failed, using local fallback", err);
   }
 
   // Fallback to PyTorch ML simulated data for requested city
@@ -348,7 +349,8 @@ async function fetchCurrentWeather(city: string): Promise<SynthesizedHeatData> {
 
 async function fetchForecastWeather(city: string): Promise<DailyForecast[]> {
   try {
-    const res = await fetch(`https://heatzone-backend.onrender.com/api/v1/forecast/${encodeURIComponent(city)}`);
+    const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    const res = await fetch(`${RENDER_BASE}/api/v1/forecast/${encodeURIComponent(city)}`);
     if (res.ok) {
       const data = await res.json();
       const list = data.predictions || data.forecast;

@@ -117,7 +117,7 @@ export default function Dashboard() {
           />
           <StatCard 
             title="Avg Humidity" 
-            value={`${overview.avgHumidity || 0}%`} 
+            value={`${Math.round(overview.avgHumidity || 0)}%`} 
             subtitle="State-wide Average"
             icon={<WiHumidity className="w-6 h-6 text-sky-400" />}
             delay={0.8}
@@ -303,7 +303,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center gap-1">
                   <WiHumidity className="w-5 h-5" />
-                  {city.humidity || 0}%
+                  {Math.round(city.humidity || 0)}%
                 </div>
                 <div className="flex items-center gap-1">
                   <FaCarSide className="w-3 h-3" />
@@ -327,7 +327,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
   // Fetch real-time live-update from backend route /api/v1/live-update or /api/v1/weather/live-update
   const fetchLiveUpdates = async () => {
     try {
-      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       let res = await fetch(`${RENDER_BASE}/api/v1/live-update`);
       if (!res.ok) {
         res = await fetch(`${RENDER_BASE}/api/v1/weather/live-update`);
@@ -353,7 +353,7 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
   const triggerManualUpdate = async () => {
     setIsUpdating(true);
     try {
-      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       let res = await fetch(`${RENDER_BASE}/api/v1/live-update`, { method: "POST" });
       if (!res.ok) {
         res = await fetch(`${RENDER_BASE}/api/v1/weather/live-update`, { method: "POST" });

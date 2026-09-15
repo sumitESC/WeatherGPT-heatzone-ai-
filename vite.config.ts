@@ -29,9 +29,12 @@ export default defineConfig({
     port,
     host: "0.0.0.0",
     allowedHosts: true,
+    hmr: {
+      clientPort: 443,
+    },
     proxy: {
       '^/api/': {
-        target: 'https://heatzone-backend.onrender.com',
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       },

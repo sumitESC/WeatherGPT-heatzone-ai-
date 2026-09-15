@@ -278,7 +278,7 @@ export default function Forecast() {
 
     const fetchData = async () => {
       try {
-        const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+        const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const selectedCityObj = Array.isArray(cities) ? cities.find(c => c.id === selectedCityId) : null;
         const cityName = selectedCityObj ? selectedCityObj.name : (selectedCityId === "all" ? "Lucknow" : "Lucknow");
         
@@ -521,7 +521,8 @@ function MLHistoryView({ city }: { city: string }) {
     const startDate = format(start, "yyyy-MM-dd");
     const endDate = format(end, "yyyy-MM-dd");
 
-    fetch(`/api/ml/history/${city}?start_date=${startDate}&end_date=${endDate}`)
+    const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+    fetch(`${RENDER_BASE}/api/v1/history/${encodeURIComponent(city)}?start_date=${startDate}&end_date=${endDate}`)
       .then(res => {
          if (!res.ok) throw new Error("Failed to fetch history. ML engine might be down.");
          return res.json();

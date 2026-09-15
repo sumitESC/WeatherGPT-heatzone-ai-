@@ -40,6 +40,12 @@ interface HistoryRecord {
   green_cover_ratio: string;
 }
 
+function safeNum(val: any, fallback = 0): number {
+  if (val === null || val === undefined || val === "" || val === "NaN") return fallback;
+  const n = Number(val);
+  return isNaN(n) ? fallback : n;
+}
+
 function generateFallbackHistoryData(cityName: string): HistoryRecord[] {
   const records: HistoryRecord[] = [];
   const years = [2021, 2022, 2023, 2024, 2025, 2026];
@@ -111,11 +117,11 @@ export default function HistoryPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com';
+      const RENDER_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
       const res = await fetch(`${RENDER_BASE}/api/v1/history/${encodeURIComponent(selectedCity)}?start_date=${startDate}&end_date=${endDate}`);
       if (res.ok) {
         const response = await res.json();
-        const records = response?.records || response?.data || response;
+        const records = response?.data || response?.records || response;
         if (Array.isArray(records) && records.length > 0) {
           setHistoryData(records);
           setIsLoading(false);
@@ -137,32 +143,51 @@ export default function HistoryPage() {
   }, [selectedCity, startDate, endDate]);
 
   const sortedHistoryData = [...historyData].sort((a, b) => {
-    const d1 = a.Date ? parseISO(a.Date).getTime() : new Date(`${a.year}-${a.month}-01`).getTime();
-    const d2 = b.Date ? parseISO(b.Date).getTime() : new Date(`${b.year}-${b.month}-01`).getTime();
-    return d1 - d2;
+    const recA = a.Date || (a as any).date || `${a.year}-${a.month}-01`;
+    const recB = b.Date || (b as any).date || `${b.year}-${b.month}-01`;
+    return parseISO(recA).getTime() - parseISO(recB).getTime();
   });
 
-  const chartData = sortedHistoryData.map(record => ({
-    date: record.Date ? format(parseISO(record.Date), "MMM dd, yyyy") : `${record.month}/${record.year}`,
-    maxTemp: parseFloat(record.max_temp_c) || 0,
-    minTemp: parseFloat(record.min_temp_c) || 0,
-    avgTemp: parseFloat(record.avg_temp_c) || 0,
-    humidity: parseFloat(record.humidity_pct) || 0,
-    wind: parseFloat(record.wind_speed_ms) || 0,
-    ndvi: (parseFloat(record.ndvi) || parseFloat((record as any).NDVI)) || 0.22,
-    ndbi: (parseFloat(record.ndbi) || parseFloat((record as any).NDBI)) || 0.35,
-    savi: (parseFloat(record.savi) || parseFloat((record as any).SAVI)) || 0.2,
-    evi: (parseFloat(record.evi) || parseFloat((record as any).EVI)) || (parseFloat(record.ndvi) || 0.25),
-    bsi: (parseFloat(record.bsi) || parseFloat((record as any).BSI)) || (parseFloat(record.ndbi) || 0.3),
-    ui: (parseFloat(record.ui) || parseFloat((record as any).UI)) || (parseFloat(record.ndbi) || 0.38),
-    ndwi: (parseFloat(record.ndwi) || parseFloat((record as any).NDWI)) || -0.25,
-    soilMoisture: (parseFloat(record.soil_moisture) || parseFloat((record as any).Soil_Moisture)) || 0.18,
-    lst: (parseFloat(record.lst) || parseFloat((record as any).LST_Celsius)) || (parseFloat(record.max_temp_c) || 32),
-    albedo: parseFloat(record.albedo) || 0.14,
-    radiation: parseFloat(record.radiation) || 18,
-    emission: parseFloat(record.emission_index) || 0,
-    greenCover: parseFloat(record.green_cover_ratio) || 0.22,
-  }));
+  const chartData = sortedHistoryData.map(record => {
+    const maxT = safeNum(record.max_temp_c ?? (record as any).Temp_Max_C, 30);
+    const minT = safeNum(record.min_temp_c ?? (record as any).Temp_Min_C, maxT - 10);
+    const avgT = safeNum(record.avg_temp_c ?? (record as any).Temp_Mean_C, (maxT + minT) / 2);
+    const hum = safeNum(record.humidity_pct ?? (record as any).Humidity_Mean_pct ?? (record as any).Humidity_Max_pct, 55);
+    const wind = safeNum(record.wind_speed_ms ?? (record as any).Wind_Speed_Max_kmh, 5);
+
+    const rawDate = record.Date || (record as any).date || (record.year && record.month ? `${record.year}-${String(record.month).padStart(2, '0')}-01` : null);
+    let dateStr = `${record.month || '01'}/${record.year || '2000'}`;
+    if (rawDate) {
+      try {
+        const parsed = parseISO(rawDate);
+        if (!isNaN(parsed.getTime())) {
+          dateStr = format(parsed, "MMM dd, yyyy");
+        }
+      } catch (e) {}
+    }
+
+    return {
+      date: dateStr,
+      maxTemp: Math.round(maxT * 10) / 10,
+      minTemp: Math.round(minT * 10) / 10,
+      avgTemp: Math.round(avgT * 10) / 10,
+      humidity: Math.round(hum),
+      wind: Math.round(wind * 10) / 10,
+      ndvi: safeNum(record.ndvi ?? (record as any).NDVI, 0.22),
+      ndbi: safeNum(record.ndbi ?? (record as any).NDBI, 0.35),
+      savi: safeNum(record.savi ?? (record as any).SAVI, 0.20),
+      evi: safeNum(record.evi ?? (record as any).EVI, 0.25),
+      bsi: safeNum(record.bsi ?? (record as any).BSI, 0.30),
+      ui: safeNum(record.ui ?? (record as any).UI, 0.38),
+      ndwi: safeNum(record.ndwi ?? (record as any).NDWI, -0.25),
+      soilMoisture: safeNum(record.soil_moisture ?? (record as any).Soil_Moisture_0_7cm_m3m3 ?? (record as any).Soil_Moisture, 0.18),
+      lst: safeNum(record.lst ?? (record as any).LST_Celsius ?? (record as any).Soil_Temp_0_7cm_C, maxT + 3),
+      albedo: safeNum(record.albedo, 0.14),
+      radiation: safeNum(record.radiation ?? (record as any).Shortwave_Radiation_MJm2, 18),
+      emission: safeNum(record.emission_index, 3.5),
+      greenCover: safeNum(record.green_cover_ratio, 0.22),
+    };
+  });
 
   const avgMaxTemp = chartData.length ? chartData.reduce((acc, val) => acc + val.maxTemp, 0) / chartData.length : 0;
   const avgLST = chartData.length ? chartData.reduce((acc, val) => acc + val.lst, 0) / chartData.length : 0;
@@ -424,22 +449,41 @@ export default function HistoryPage() {
               <div className="w-full py-10 flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary opacity-50" />
               </div>
-            ) : historyData.length > 0 ? (
+            ) : sortedHistoryData.length > 0 ? (
               <div className="space-y-3">
-                {historyData.map((record, i) => (
-                  <div key={i} className="p-3 bg-secondary/30 rounded-xl border border-border/50 text-sm">
-                    <div className="flex justify-between font-semibold mb-2">
-                      <span>{record.Date ? format(parseISO(record.Date), "MMM dd, yyyy") : `${record.month}/${record.year}`}</span>
-                      <span className="text-orange-500">{parseFloat(record.max_temp_c).toFixed(1)}°C Max</span>
+                {sortedHistoryData.map((record, i) => {
+                  const maxT = safeNum(record.max_temp_c ?? (record as any).Temp_Max_C, 30);
+                  const avgT = safeNum(record.avg_temp_c ?? (record as any).Temp_Mean_C, maxT);
+                  const hum = safeNum(record.humidity_pct ?? (record as any).Humidity_Mean_pct ?? (record as any).Humidity_Max_pct, 55);
+                  const ndvi = safeNum(record.ndvi ?? (record as any).NDVI, 0.22);
+                  const green = safeNum(record.green_cover_ratio ?? (record as any).Green_Cover_Ratio, 0.20);
+
+                  const rawDate = record.Date || (record as any).date || (record.year && record.month ? `${record.year}-${String(record.month).padStart(2, '0')}-01` : null);
+                  let dateDisplay = `${record.month || '01'}/${record.year || '2000'}`;
+                  if (rawDate) {
+                    try {
+                      const parsed = parseISO(rawDate);
+                      if (!isNaN(parsed.getTime())) {
+                        dateDisplay = format(parsed, "MMM dd, yyyy");
+                      }
+                    } catch (e) {}
+                  }
+
+                  return (
+                    <div key={i} className="p-3 bg-secondary/30 rounded-xl border border-border/50 text-sm">
+                      <div className="flex justify-between font-semibold mb-2">
+                        <span>{dateDisplay}</span>
+                        <span className="text-orange-500">{maxT.toFixed(1)}°C Max</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-muted-foreground text-xs">
+                        <div>Avg Temp: <span className="text-foreground">{avgT.toFixed(1)}°C</span></div>
+                        <div>Humidity: <span className="text-foreground">{Math.round(hum)}%</span></div>
+                        <div>NDVI: <span className="text-foreground">{ndvi.toFixed(3)}</span></div>
+                        <div>Green Cover: <span className="text-foreground">{green.toFixed(3)}</span></div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-muted-foreground text-xs">
-                      <div>Avg Temp: <span className="text-foreground">{parseFloat(record.avg_temp_c).toFixed(1)}°C</span></div>
-                      <div>Humidity: <span className="text-foreground">{parseFloat(record.humidity_pct).toFixed(0)}%</span></div>
-                      <div>NDVI: <span className="text-foreground">{parseFloat(record.ndvi).toFixed(3)}</span></div>
-                      <div>Green Cover: <span className="text-foreground">{parseFloat(record.green_cover_ratio).toFixed(3)}</span></div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="py-10 text-center text-muted-foreground text-sm">
@@ -452,3 +496,4 @@ export default function HistoryPage() {
     </div>
   );
 }
+
