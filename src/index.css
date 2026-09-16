@@ -181,6 +181,11 @@
   border-left: 1px solid hsl(var(--border));
 }
 
+/* OpenStreetMap Dark Mode Tile Filter */
+.leaflet-tile-osm-dark {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 /* Weather animations */
 @keyframes rainDrop {
   0% { transform: translateY(-10px); opacity: 0; }

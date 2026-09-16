@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup, ZoomControl, LayerGroup, 
 import { Link } from "wouter";
 import { HeatZoneBadge } from "@/components/HeatZoneBadge";
 import { getHeatZoneHex } from "@/lib/utils";
-import { Loader2, ArrowRight, Satellite, Map as MapIcon, ExternalLink, Thermometer, Construction, TreePine, Droplet } from "lucide-react";
+import { Loader2, ArrowRight, Satellite, Map as MapIcon, ExternalLink, Thermometer, Construction, TreePine, Droplet, Globe, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 
 // MUST IMPORT LEAFLET CSS for the map to be visible
@@ -24,14 +24,39 @@ function MapController() {
   return null;
 }
 
-const TILE_LAYERS = {
-  dark: {
-    url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+interface TileConfig {
+  name: string;
+  url: string;
+  attribution: string;
+  className?: string;
+  maxZoom?: number;
+}
+
+const TILE_LAYERS: Record<string, TileConfig> = {
+  osm_dark: {
+    name: "OSM Dark",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    className: "leaflet-tile-osm-dark",
+    maxZoom: 19,
+  },
+  esri_dark: {
+    name: "Esri Dark",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a> — GIS User Community',
+    maxZoom: 16,
+  },
+  carto_dark: {
+    name: "Carto Dark",
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 19,
   },
   satellite: {
+    name: "Satellite",
     url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     attribution: '&copy; <a href="https://www.esri.com/">Esri</a> — Earthstar Geographics',
+    maxZoom: 18,
   },
 };
 
@@ -59,7 +84,7 @@ const OVERLAYS = {
 
 export default function MapPage() {
   const { data: cities, isLoading } = useGetAllHeatPredictions();
-  const [tileMode, setTileMode] = useState("dark");
+  const [tileMode, setTileMode] = useState("osm_dark");
   const [overlayMode, setOverlayMode] = useState("none");
 
   const cityList = useMemo(() => {
@@ -76,7 +101,7 @@ export default function MapPage() {
   }
 
   const center: [number, number] = [26.8467, 80.9462];
-  const tile = TILE_LAYERS[tileMode];
+  const tile = TILE_LAYERS[tileMode] || TILE_LAYERS.osm_dark;
   const overlay = OVERLAYS[overlayMode];
 
   return (
@@ -100,6 +125,8 @@ export default function MapPage() {
             key={tileMode}
             attribution={tile.attribution}
             url={tile.url}
+            className={tile.className}
+            maxZoom={tile.maxZoom}
           />
 
           {/* FIX 2: Actually render the selected overlay to the map */}
@@ -178,16 +205,39 @@ export default function MapPage() {
         {/* The rest of your UI absolute overlays... */}
         <div className="absolute top-4 left-4 z-[400] flex flex-col gap-2 pointer-events-none">
           <div className="pointer-events-auto flex flex-col gap-2">
-            <button
-              onClick={() => setTileMode(tileMode === "dark" ? "satellite" : "dark")}
-              className="flex items-center gap-2 bg-card/90 backdrop-blur-md border border-border px-3 py-2 rounded-xl shadow-xl text-sm font-semibold text-foreground hover:bg-card transition-colors w-fit"
-            >
-              {tileMode === "dark" ? (
-                <><Satellite className="w-4 h-4 text-blue-400" /> Satellite</>
-              ) : (
-                <><MapIcon className="w-4 h-4 text-purple-400" /> Dark Map</>
-              )}
-            </button>
+            <div className="flex items-center bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden text-xs font-semibold">
+              <button
+                onClick={() => setTileMode("osm_dark")}
+                className={`px-3 py-2 transition-colors flex items-center gap-1.5 ${tileMode === "osm_dark" ? "bg-emerald-600 text-white font-bold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+                title="OpenStreetMap with Dark Filter"
+              >
+                <Globe className="w-3.5 h-3.5 text-emerald-400" /> OSM Dark
+              </button>
+              <div className="w-px h-4 bg-border"></div>
+              <button
+                onClick={() => setTileMode("esri_dark")}
+                className={`px-3 py-2 transition-colors flex items-center gap-1.5 ${tileMode === "esri_dark" ? "bg-purple-600 text-white font-bold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+                title="Esri World Dark Gray Canvas"
+              >
+                <MapIcon className="w-3.5 h-3.5 text-purple-400" /> Esri Dark
+              </button>
+              <div className="w-px h-4 bg-border"></div>
+              <button
+                onClick={() => setTileMode("carto_dark")}
+                className={`px-3 py-2 transition-colors flex items-center gap-1.5 ${tileMode === "carto_dark" ? "bg-blue-600 text-white font-bold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+                title="CartoDB Dark Matter"
+              >
+                <Layers className="w-3.5 h-3.5 text-blue-400" /> Carto Dark
+              </button>
+              <div className="w-px h-4 bg-border"></div>
+              <button
+                onClick={() => setTileMode("satellite")}
+                className={`px-3 py-2 transition-colors flex items-center gap-1.5 ${tileMode === "satellite" ? "bg-amber-600 text-white font-bold" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}
+                title="Esri World Satellite Imagery"
+              >
+                <Satellite className="w-3.5 h-3.5 text-amber-400" /> Satellite
+              </button>
+            </div>
 
             <div className="flex flex-wrap bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-xl overflow-hidden text-xs font-semibold">
               <button

@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SplashScreen } from "@/components/SplashScreen";
+import { BackendWakingOverlay } from "@/components/BackendWakingOverlay";
 import { DataSourceProvider } from "@/context/DataSourceContext";
 
 // Layouts
@@ -84,6 +85,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+            <BackendWakingOverlay />
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <Router />
             </WouterRouter>

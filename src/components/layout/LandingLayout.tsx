@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchLiveUpdates } from "@/lib/renderApi";
 
 interface LandingLayoutProps {
   children: ReactNode;
@@ -15,27 +16,64 @@ export function LandingLayout({ children }: LandingLayoutProps) {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Live UP Climate Weather Feed Ticker
-  const upLiveCities = [
-    { name: "Kanpur", temp: "38.5°C", risk: "88 (EXTREME)", icon: "🔥", status: "Critical Heat Island" },
-    { name: "Lucknow", temp: "34.2°C", risk: "68 (HIGH)", icon: "☀️", status: "Urban Canyon Heat" },
-    { name: "Gorakhpur", temp: "31.0°C", risk: "42 (MODERATE)", icon: "🌧️", status: "Monsoon Convection" },
-    { name: "Ghaziabad", temp: "37.1°C", risk: "82 (EXTREME)", icon: "⚠️", status: "Traffic & Industrial Exhaust" },
-    { name: "Varanasi", temp: "35.8°C", risk: "76 (HIGH)", icon: "🌡️", status: "High Thermal Radiation" },
-    { name: "Prayagraj", temp: "36.4°C", risk: "79 (HIGH)", icon: "🔥", status: "Built-up Heat Trap" },
-    { name: "Jhansi", temp: "39.1°C", risk: "91 (EXTREME)", icon: "🔥", status: "Bundelkhand Heatwave" },
-  ];
+  // Live UP Climate Weather Feed Ticker (Populated 100% dynamically from Render backend)
+  const [liveCities, setLiveCities] = useState<Array<{ name: string; temp: string; risk: string; icon: string; status: string }>>([]);
 
   const [activeTickerIndex, setActiveTickerIndex] = useState(0);
 
+  // Fetch live updates from backend API
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveTickerIndex((prev) => (prev + 1) % upLiveCities.length);
-    }, 4000);
-    return () => clearInterval(timer);
+    let isMounted = true;
+    async function loadTickerData() {
+      try {
+        const liveRes = await fetchLiveUpdates();
+        if (isMounted && liveRes && Array.isArray(liveRes.live_city_updates) && liveRes.live_city_updates.length > 0) {
+          // Filter cities crossing climate thresholds (Temp >= 34°C, Risk >= 45, Rain >= 1mm, Wind >= 12km/h, Humidity >= 65%)
+          const thresholdCities = liveRes.live_city_updates.filter((c: any) => {
+            return (c.heat_risk_score || 0) >= 45 || (c.temp_max_c || 0) >= 34.0 || (c.precipitation_mm || 0) >= 1.0 || (c.wind_speed_kmh || 0) >= 12.0 || (c.humidity_pct || 0) >= 65;
+          });
+
+          const targetCities = thresholdCities.length > 0 ? thresholdCities : liveRes.live_city_updates;
+
+          // Sort by highest heat risk score & temperature descending
+          const sorted = [...targetCities].sort((a: any, b: any) => (b.heat_risk_score || 0) - (a.heat_risk_score || 0));
+
+          const mapped = sorted.map((c: any) => {
+            let icon = "☀️";
+            const zone = (c.heat_zone || "moderate").toUpperCase();
+            if (zone === "EXTREME") icon = "🔥";
+            else if (zone === "HIGH") icon = "🌡️";
+            else if (c.precipitation_mm > 0) icon = "🌧️";
+
+            return {
+              name: c.city,
+              temp: `${(c.temp_max_c || 34).toFixed(1)}°C`,
+              risk: `${Math.round(c.heat_risk_score || 50)} (${zone})`,
+              icon,
+              status: c.primary_driver || "Live Threshold Exceeded"
+            };
+          });
+          setLiveCities(mapped);
+        }
+      } catch (err) {
+        console.warn("LandingLayout ticker live fetch warning:", err);
+      }
+    }
+
+    loadTickerData();
+    const interval = setInterval(loadTickerData, 60000);
+    return () => { isMounted = false; clearInterval(interval); };
   }, []);
 
-  const currentTicker = upLiveCities[activeTickerIndex];
+  useEffect(() => {
+    if (liveCities.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveTickerIndex((prev) => (prev + 1) % liveCities.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [liveCities.length]);
+
+  const currentTicker = liveCities[activeTickerIndex % (liveCities.length || 1)] || liveCities[0];
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -66,20 +104,27 @@ export function LandingLayout({ children }: LandingLayoutProps) {
           </div>
 
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTickerIndex}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-3 font-semibold text-white truncate mx-4 text-[11px]"
-            >
-              <span>{currentTicker.icon}</span>
-              <span className="font-bold text-yellow-400">{currentTicker.name.toUpperCase()}</span>
-              <span>Temp: <strong className="text-red-400">{currentTicker.temp}</strong></span>
-              <span className="hidden sm:inline">Risk: <strong className="text-orange-400">{currentTicker.risk}</strong></span>
-              <span className="hidden lg:inline text-gray-400">({currentTicker.status})</span>
-            </motion.div>
+            {currentTicker ? (
+              <motion.div
+                key={activeTickerIndex}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-3 font-semibold text-white truncate mx-4 text-[11px]"
+              >
+                <span>{currentTicker.icon}</span>
+                <span className="font-bold text-yellow-400">{currentTicker.name.toUpperCase()}</span>
+                <span>Temp: <strong className="text-red-400">{currentTicker.temp}</strong></span>
+                <span className="hidden sm:inline">Risk: <strong className="text-orange-400">{currentTicker.risk}</strong></span>
+                <span className="hidden lg:inline text-gray-400">({currentTicker.status})</span>
+              </motion.div>
+            ) : (
+              <div className="flex items-center gap-2 font-semibold text-gray-400 text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                Connecting to Render API stream...
+              </div>
+            )}
           </AnimatePresence>
 
           <Link href="/map" className="shrink-0 text-blue-400 font-bold hover:underline hidden sm:flex items-center gap-1 text-[11px]">

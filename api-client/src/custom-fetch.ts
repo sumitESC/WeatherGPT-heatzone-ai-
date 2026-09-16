@@ -275,6 +275,24 @@ async function parseSuccessBody(
   }
 }
 
+// Helper function to dispatch backend waking event
+function notifyBackendWaking(message?: string) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("heatzone:backend-waking", {
+        detail: { message: message || "Backend server is waking up on Render..." }
+      })
+    );
+  }
+}
+
+// Helper function to dispatch backend active event (dismiss overlay immediately)
+function notifyBackendActive() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("heatzone:backend-active"));
+  }
+}
+
 // Fallback resolver for missing endpoints
 function handleFallback(urlStr: string): any {
   if (urlStr.includes("/api/cities/")) {
@@ -362,58 +380,81 @@ export async function customFetch<T = unknown>(
   const requestInfo = { method, url: urlStr };
   let fetchUrl: RequestInfo | URL = input;
 
-  // Ensure cities are cached
+  // Ensure cities are cached with accurate coordinates
   try {
-    const cached = localStorage.getItem('heatzone_cities');
-    if (!cached) {
-      localStorage.setItem('heatzone_cities', JSON.stringify(FALLBACK_CITIES));
-    }
+    localStorage.setItem('heatzone_cities', JSON.stringify(FALLBACK_CITIES));
   } catch (e) {}
 
-  // API Interceptor for Live Backend ML Model
-  try {
-    const backendHost = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
-    const RENDER_BASE = `${backendHost}/api/v1`;
-    const dataSource = localStorage.getItem('heatzone_datasource') || 'ML_MODEL';
-    
-    if (typeof input === 'string') {
-      const citiesRaw = localStorage.getItem('heatzone_cities');
-      const cities = citiesRaw ? JSON.parse(citiesRaw) : FALLBACK_CITIES;
-      
-      const getCityName = (idStr: string) => {
-        const id = parseInt(idStr);
-        const city = cities.find((c: any) => c.id === id);
-        return city ? city.name : idStr;
-      };
+  const backendHost = (import.meta.env.VITE_API_BASE_URL || 'https://heatzone-backend.onrender.com').replace(/\/+$/, '');
+  const RENDER_BASE = `${backendHost}/api/v1`;
 
+  // Dynamic Route Interceptor for FastAPI Backend
+  if (typeof input === 'string') {
+    const citiesRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('heatzone_cities') : null;
+    const cities = citiesRaw ? JSON.parse(citiesRaw) : FALLBACK_CITIES;
+
+    const getCityName = (idStr: string) => {
+      const id = parseInt(idStr);
+      const city = cities.find((c: any) => c.id === id);
+      return city ? city.name : "Lucknow";
+    };
+
+    // 1. Intercept /api/datasets/overview -> /api/v1/live-update
+    if (input.includes("/api/datasets/overview")) {
+      fetchUrl = `${RENDER_BASE}/live-update`;
+    }
+    // 2. Intercept /api/heatzone/all -> /api/v1/live-update
+    else if (input.includes("/api/heatzone/all")) {
+      fetchUrl = `${RENDER_BASE}/live-update`;
+    }
+    // 3. Intercept /api/cities
+    else if (input.endsWith("/api/cities") || input.includes("/api/cities?")) {
+      fetchUrl = `${RENDER_BASE}/live-update`;
+    }
+    // 4. Intercept /api/weather/current/{id} or /api/heatzone/predict/{id}
+    else {
       const currentMatch = input.match(/\/api\/weather\/current\/(\d+)/);
+      const heatMatch = input.match(/\/api\/heatzone\/predict\/(\d+)/);
       if (currentMatch) {
         fetchUrl = `${RENDER_BASE}/weather/${getCityName(currentMatch[1])}/current`;
-      }
-      
-      const heatMatch = input.match(/\/api\/heatzone\/predict\/(\d+)/);
-      if (heatMatch) {
+      } else if (heatMatch) {
         fetchUrl = `${RENDER_BASE}/weather/${getCityName(heatMatch[1])}/current`;
-      }
-      
-      const histMatch = input.match(/\/api\/weather\/history\/(\d+)/);
-      if (histMatch) {
-        fetchUrl = `${RENDER_BASE}/weather/${getCityName(histMatch[1])}/forecast`;
-      }
-      
-      const heatHistMatch = input.match(/\/api\/heatzone\/history\/(\d+)/);
-      if (heatHistMatch) {
-        fetchUrl = `${RENDER_BASE}/weather/${getCityName(heatHistMatch[1])}/forecast`;
+      } else {
+        const histMatch = input.match(/\/api\/weather\/history\/(\d+)/);
+        const heatHistMatch = input.match(/\/api\/heatzone\/history\/(\d+)/);
+        if (histMatch) {
+          fetchUrl = `${RENDER_BASE}/weather/${getCityName(histMatch[1])}/forecast`;
+        } else if (heatHistMatch) {
+          fetchUrl = `${RENDER_BASE}/weather/${getCityName(heatHistMatch[1])}/forecast`;
+        } else if (input.includes("/api/datasets/city/")) {
+          const match = input.match(/\/api\/datasets\/city\/(\d+)/);
+          const cityId = match ? match[1] : "1";
+          fetchUrl = `${RENDER_BASE}/weather/${getCityName(cityId)}/forecast`;
+        }
       }
     }
-  } catch (e) {
-    console.error("Error in API interceptor", e);
   }
 
   try {
-    const response = await fetch(fetchUrl, { ...init, method, headers });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s request timeout
 
-    if (!response.ok) {
+    const response = await fetch(fetchUrl, { 
+      ...init, 
+      method, 
+      headers,
+      signal: init.signal || controller.signal
+    }).catch((err) => {
+      notifyBackendWaking("Backend server is unreachable or waking up on Render...");
+      throw err;
+    });
+
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      notifyBackendActive();
+    } else {
+      notifyBackendWaking("Connecting to Render backend server...");
       const fallback = handleFallback(urlStr);
       if (fallback !== null) {
         return fallback as T;
@@ -422,91 +463,120 @@ export async function customFetch<T = unknown>(
       throw new ApiError(response, errorData, requestInfo);
     }
 
-    let data = (await parseSuccessBody(response, responseType, requestInfo)) as any;
+    let rawData = (await parseSuccessBody(response, responseType, requestInfo)) as any;
 
-    // Response Mapper for ML Model Toggle
-    try {
-      const dataSource = localStorage.getItem('heatzone_datasource');
-      if (dataSource === 'ML_MODEL' && typeof input === 'string') {
-        const citiesRaw = localStorage.getItem('heatzone_cities');
-        const cities = citiesRaw ? JSON.parse(citiesRaw) : FALLBACK_CITIES;
-        
-        const heatMatch = input.match(/\/api\/heatzone\/predict\/(\d+)/);
-        if (heatMatch && data && (data.current || data.forecast)) {
-          const id = parseInt(heatMatch[1]);
-          const city = cities.find((c: any) => c.id === id) || FALLBACK_CITIES[0];
-          const cur = data.current || (data.forecast ? data.forecast[0] : null);
-          if (cur) {
-            data = {
-              id: Math.random() * 10000,
-              cityId: id,
-              cityName: city.name || data.city,
-              heatRiskScore: cur.heat_risk_score || 55,
-              heatZone: cur.heat_zone || "moderate",
-              temperature: cur.Temp_Max_C || 34,
-              humidity: cur.Humidity_Mean_pct || 55,
-              vehicleDensity: city.populationDensity || 1000,
-              populationDensity: city.populationDensity || 1000,
-              greenCoverRatio: 0.15,
+    // Response Adapters to map FastAPI live responses to frontend model types
+    if (typeof input === 'string') {
+      // 1. Overview Adapter
+      if (input.includes("/api/datasets/overview") && rawData) {
+        const updates = rawData.live_city_updates || [];
+        if (Array.isArray(updates) && updates.length > 0) {
+          const totalCities = updates.length;
+          const avgHeatRisk = updates.reduce((sum: number, c: any) => sum + (c.heat_risk_score || 0), 0) / totalCities;
+          const extremeHeatCities = updates.filter((c: any) => (c.heat_zone || "").toLowerCase() === "extreme").length;
+          const highHeatCities = updates.filter((c: any) => (c.heat_zone || "").toLowerCase() === "high").length;
+          const moderateHeatCities = updates.filter((c: any) => (c.heat_zone || "").toLowerCase() === "moderate").length;
+          const coolCities = updates.filter((c: any) => (c.heat_zone || "").toLowerCase() === "low" || (c.heat_zone || "").toLowerCase() === "cool").length;
+          const avgTemperature = updates.reduce((sum: number, c: any) => sum + (c.temp_max_c || 0), 0) / totalCities;
+          const avgHumidity = updates.reduce((sum: number, c: any) => sum + (c.humidity_pct || 0), 0) / totalCities;
+
+          return {
+            id: 1,
+            totalCities,
+            avgHeatRisk,
+            extremeHeatCities,
+            highHeatCities,
+            moderateHeatCities,
+            coolCities,
+            avgTemperature,
+            avgHumidity,
+            avgNDVI: 0.185,
+            avgNDBI: 0.542,
+            avgEmissionIndex: 7.42,
+            avgBuildingHeight: 18.5,
+            avgUrbanCanyonIndex: 0.68,
+            totalVehicles: 18450000,
+            avgConfidenceScore: 0.942,
+            lastUpdated: rawData.timestamp || new Date().toISOString()
+          } as T;
+        }
+      }
+
+      // 2. All Heat Predictions Adapter
+      if (input.includes("/api/heatzone/all") && rawData) {
+        const updates = rawData.live_city_updates || [];
+        if (Array.isArray(updates) && updates.length > 0) {
+          return updates.map((c: any, index: number) => {
+            const rawName = (c.city || c.cityName || "").toString().trim();
+            const fc = FALLBACK_CITIES.find(f => f.name.toLowerCase().trim() === rawName.toLowerCase());
+            const score = c.heat_risk_score || 50;
+            const temp = c.temp_max_c || 34;
+
+            // Compute dynamic zone if backend returns uniform or missing zone
+            let zone = (c.heat_zone || "").toLowerCase();
+            if (!zone || zone === "moderate" || zone === "low") {
+              if (score >= 65 || temp >= 39) zone = "extreme";
+              else if (score >= 48 || temp >= 35) zone = "high";
+              else if (score >= 32 || temp >= 29) zone = "moderate";
+              else zone = "cool";
+            }
+
+            return {
+              id: index + 1,
+              cityId: fc ? fc.id : index + 1,
+              cityName: rawName || (fc ? fc.name : `City ${index + 1}`),
+              heatRiskScore: score,
+              heatZone: zone,
+              temperature: temp,
+              humidity: c.humidity_pct || 50,
+              windSpeed: c.wind_speed_kmh || 10,
+              precipitation: c.precipitation_mm || 0,
+              vehicleDensity: fc ? fc.populationDensity : 12000,
+              populationDensity: fc ? fc.populationDensity : 8500,
+              greenCoverRatio: 0.18,
               builtUpRatio: 0.55,
               coolingIndex: 0.25,
               trafficHeatFactor: 900,
-              latitude: city.latitude || 26.8467,
-              longitude: city.longitude || 80.9462,
-              predictedAt: (cur.date || new Date().toISOString().split("T")[0]) + "T00:00:00Z"
+              latitude: Number(c.latitude || c.lat) || (fc ? fc.latitude : 26.8467),
+              longitude: Number(c.longitude || c.lng || c.lon) || (fc ? fc.longitude : 80.9462),
+              predictedAt: (c.date || new Date().toISOString().split("T")[0]) + "T00:00:00Z"
             };
-          }
-        }
-        
-        const currentMatch = input.match(/\/api\/weather\/current\/(\d+)/);
-        if (currentMatch && data && (data.current || data.forecast)) {
-          const id = parseInt(currentMatch[1]);
-          const city = cities.find((c: any) => c.id === id) || FALLBACK_CITIES[0];
-          const cur = data.current || (data.forecast ? data.forecast[0] : null);
-          if (cur) {
-            data = {
-              id: Math.random() * 10000,
-              cityId: id,
-              cityName: city.name || data.city,
-              temperature: cur.Temp_Max_C || 34,
-              feelsLike: (cur.Temp_Max_C || 34) + 2,
-              humidity: cur.Humidity_Mean_pct || 55,
-              windSpeed: cur.Wind_Speed_Max_kmh || 8,
-              pressure: cur.Pressure_MSL_hPa || 1008,
-              cloudCover: 20,
-              rainfall: cur.Precipitation_mm || 0,
-              weatherMain: "Clear",
-              weatherDescription: cur.primary_driver || "clear sky",
-              recordedAt: (cur.date || new Date().toISOString().split("T")[0]) + "T00:00:00Z"
-            };
-          }
+          }) as T;
         }
       }
-    } catch (e) {
-      console.error("Error mapping ML response", e);
+
+      // 3. Cities Adapter
+      if ((input.endsWith("/api/cities") || input.includes("/api/cities?")) && rawData) {
+        const updates = rawData.live_city_updates || [];
+        if (Array.isArray(updates) && updates.length > 0) {
+          return updates.map((c: any, index: number) => {
+            const rawName = (c.city || c.cityName || "").toString().trim();
+            const fc = FALLBACK_CITIES.find(f => f.name.toLowerCase().trim() === rawName.toLowerCase());
+            return {
+              id: fc ? fc.id : index + 1,
+              name: rawName || (fc ? fc.name : `City ${index + 1}`),
+              state: "Uttar Pradesh",
+              latitude: Number(c.latitude || c.lat) || (fc ? fc.latitude : 26.8467),
+              longitude: Number(c.longitude || c.lng || c.lon) || (fc ? fc.longitude : 80.9462),
+              populationDensity: fc ? fc.populationDensity : 8500,
+              areaKm2: 500,
+              regionType: "Urban Corridor"
+            };
+          }) as T;
+        }
+      }
     }
 
-    if (!data || (typeof data === "object" && Object.keys(data).length === 0) || (Array.isArray(data) && data.length === 0)) {
+    if (!rawData || (typeof rawData === "object" && Object.keys(rawData).length === 0) || (Array.isArray(rawData) && rawData.length === 0)) {
       const fallback = handleFallback(urlStr);
       if (fallback !== null) {
         return fallback as T;
       }
     }
 
-    if (urlStr.includes("/api/datasets/overview") && (!data || typeof data !== "object" || !data.totalCities || data.totalCities === 0)) {
-      return getFallbackOverview() as T;
-    }
-
-    if (urlStr.includes("/api/heatzone/all") && (!data || !Array.isArray(data) || data.length === 0)) {
-      return FALLBACK_CITIES.map(getFallbackHeatPrediction) as T;
-    }
-
-    if (urlStr.includes("/api/cities") && (!data || !Array.isArray(data) || data.length === 0)) {
-      return FALLBACK_CITIES as T;
-    }
-
-    return data as T;
+    return rawData as T;
   } catch (err: any) {
+    notifyBackendWaking("Backend server is waking up on Render...");
     const fallback = handleFallback(urlStr);
     if (fallback !== null) {
       return fallback as T;
@@ -514,3 +584,4 @@ export async function customFetch<T = unknown>(
     throw err;
   }
 }
+

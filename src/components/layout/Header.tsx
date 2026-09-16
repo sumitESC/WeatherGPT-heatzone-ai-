@@ -12,6 +12,8 @@ import { useDataSource } from "@/context/DataSourceContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
+import { fetchLiveUpdates } from "@/lib/renderApi";
+
 interface NotificationItem {
   id: string;
   type: "heat" | "rain" | "exhaust" | "system";
@@ -37,43 +39,83 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Live Emergency Climate Notifications
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: "1",
-      type: "heat",
-      title: "🔥 Critical Heatwave Alert — Kanpur",
-      description: "Heat Risk Score reached 88/100 (Extreme Zone). Air temp 38.5°C with high solar radiation.",
-      time: "2 mins ago",
-      cityId: 1,
-      read: false,
-    },
-    {
-      id: "2",
-      type: "rain",
-      title: "🌧️ Heavy Precipitation Alert — Gorakhpur",
-      description: "Recorded 12.4mm precipitation and 84% humidity. Active monsoon convection.",
-      time: "14 mins ago",
-      cityId: 2,
-      read: false,
-    },
-    {
-      id: "3",
-      type: "exhaust",
-      title: "⚠️ Urban Canyon Exhaust — Ghaziabad",
-      description: "Industrial heat factor & high vehicle density (18.4k/km²) trapping surface thermal energy.",
-      time: "32 mins ago",
-      cityId: 3,
-      read: false,
-    },
-    {
-      id: "4",
-      type: "system",
-      title: "⚡ PyTorch ML Model Synchronized",
-      description: "Ensemble model aligned 16-day forecasts across 75 UP urban zones.",
-      time: "1 hour ago",
-      read: true,
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+  // Fetch real-time live climate notifications from backend API /api/v1/live-update
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveAlerts() {
+      try {
+        const liveRes = await fetchLiveUpdates();
+        if (isMounted && liveRes && Array.isArray(liveRes.alerts) && liveRes.alerts.length > 0) {
+          // Deduplicate alerts by city so notifications show distinct cities
+          const cityMap = new Map<string, any>();
+          for (const a of liveRes.alerts) {
+            const cityKey = (a.city || "").toLowerCase();
+            if (!cityMap.has(cityKey)) {
+              cityMap.set(cityKey, a);
+            }
+          }
+          const uniqueAlerts = Array.from(cityMap.values());
+
+          // Climate Seriousness Index Calculation
+          const calculateCSI = (a: any) => {
+            const sev = (a.severity || "").toUpperCase();
+            let sevBonus = 0;
+            if (sev === "RED") sevBonus = 50;
+            else if (sev === "ORANGE") sevBonus = 30;
+            else if (sev === "YELLOW") sevBonus = 15;
+
+            const metricText = a.metric || a.message || "";
+            const tempMatch = metricText.match(/(\d+\.?\d*)°C/);
+            const scoreMatch = metricText.match(/(\d+\.?\d*)\s*Heat Risk/i);
+            const tempVal = tempMatch ? parseFloat(tempMatch[1]) : 32;
+            const scoreVal = scoreMatch ? parseFloat(scoreMatch[1]) : 50;
+
+            return (scoreVal * 1.5) + (tempVal * 1.2) + sevBonus;
+          };
+
+          // Sort by Climate Seriousness Index descending
+          const sortedAlerts = uniqueAlerts.sort((a: any, b: any) => calculateCSI(b) - calculateCSI(a));
+          const displayAlerts = sortedAlerts.slice(0, 10);
+
+          const mappedNotifs: NotificationItem[] = displayAlerts.map((a: any, idx: number) => {
+            const cityMatch = Array.isArray(cities) ? cities.find(c => c.name.toLowerCase() === (a.city || "").toLowerCase()) : null;
+            let type: "heat" | "rain" | "exhaust" | "system" = "heat";
+            let iconStr = "🔥";
+            
+            if (a.alert_type === "RAIN") {
+              type = "rain";
+              iconStr = "🌧️";
+            } else if (a.alert_type === "WIND" || a.alert_type === "HUMIDITY") {
+              type = "exhaust";
+              iconStr = "⚠️";
+            } else if (a.alert_type === "CORRIDOR") {
+              type = "system";
+              iconStr = "📡";
+            }
+
+            return {
+              id: a.id || `live-${idx}`,
+              type,
+              title: `${iconStr} ${a.title || a.alert_type + ' Alert — ' + a.city}`,
+              description: a.message || a.metric || "Live monitoring update active.",
+              time: a.date || "Just now",
+              cityId: cityMatch ? cityMatch.id : 1,
+              read: false
+            };
+          });
+          setNotifications(mappedNotifs);
+        }
+      } catch (err) {
+        console.warn("Header live alerts fetch warning:", err);
+      }
     }
-  ]);
+
+    loadLiveAlerts();
+    const interval = setInterval(loadLiveAlerts, 60000);
+    return () => { isMounted = false; clearInterval(interval); };
+  }, [cities]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

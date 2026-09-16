@@ -43,6 +43,8 @@ function Marquee({ text, speed = 30 }: { text: string; speed?: number }) {
   );
 }
 
+import { fetchLiveUpdates, LiveUpdateResponse } from "@/lib/renderApi";
+
 const BASE = import.meta.env.BASE_URL;
 
 export default function Home() {
@@ -50,6 +52,27 @@ export default function Home() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  const [liveData, setLiveData] = useState<LiveUpdateResponse | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadLiveTelemetry() {
+      try {
+        const res = await fetchLiveUpdates();
+        if (isMounted && res) {
+          setLiveData(res);
+        }
+      } catch (err) {
+        console.warn("Home live updates fetch warning:", err);
+      }
+    }
+    loadLiveTelemetry();
+    const timer = setInterval(loadLiveTelemetry, 60000);
+    return () => { isMounted = false; clearInterval(timer); };
+  }, []);
+
+  const topAlert = liveData?.alerts && liveData.alerts.length > 0 ? liveData.alerts[0] : null;
 
   return (
     <div className="w-full overflow-x-hidden bg-background text-foreground">
@@ -72,16 +95,28 @@ export default function Home() {
         {/* Content */}
         <motion.div className="relative z-10 text-center px-6 max-w-5xl mx-auto py-16" style={{ opacity: heroOpacity }}>
           
-          {/* UP State Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 text-xs font-mono uppercase tracking-widest text-primary-foreground/90 mb-8"
-          >
-            <Compass className="w-3.5 h-3.5 text-yellow-400 animate-spin-slow" />
-            UTTAR PRADESH URBAN HEAT INTELLIGENCE SYSTEM
-          </motion.div>
+          {/* Live Real-Time Backend Ticker Banner */}
+          {topAlert ? (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/40 text-xs font-mono text-white mb-6 backdrop-blur-md shadow-lg"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-400 animate-ping shrink-0" />
+              <span className="font-bold text-red-300 uppercase tracking-wider">LIVE TELEMETRY:</span>
+              <span className="truncate max-w-md">{topAlert.title} — {topAlert.message}</span>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 text-xs font-mono uppercase tracking-widest text-primary-foreground/90 mb-8"
+            >
+              <Compass className="w-3.5 h-3.5 text-yellow-400 animate-spin-slow" />
+              UTTAR PRADESH URBAN HEAT INTELLIGENCE SYSTEM
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}

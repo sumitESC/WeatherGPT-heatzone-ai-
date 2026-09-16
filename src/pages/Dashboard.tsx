@@ -370,7 +370,38 @@ function LiveClimateTicker({ predictions, overview }: { predictions: any[]; over
   const liveAlerts = useMemo(() => {
     // Priority 1: Backend API Live Updates (/api/v1/live-update or /api/v1/weather/live-update)
     if (liveData?.alerts && Array.isArray(liveData.alerts) && liveData.alerts.length > 0) {
-      return liveData.alerts.map((a: any) => {
+      // Deduplicate alerts by city to get 1 primary update per city
+      const cityMap = new Map<string, any>();
+      for (const a of liveData.alerts) {
+        const cityKey = (a.city || "").toLowerCase();
+        if (!cityMap.has(cityKey)) {
+          cityMap.set(cityKey, a);
+        }
+      }
+      const uniqueAlerts = Array.from(cityMap.values());
+
+      // Intelligent Climate Seriousness Index (CSI) Calculation
+      const calculateCSI = (a: any) => {
+        const sev = (a.severity || "").toUpperCase();
+        let sevBonus = 0;
+        if (sev === "RED") sevBonus = 50;
+        else if (sev === "ORANGE") sevBonus = 30;
+        else if (sev === "YELLOW") sevBonus = 15;
+
+        // Parse metrics if available
+        const metricText = a.metric || a.message || "";
+        const tempMatch = metricText.match(/(\d+\.?\d*)°C/);
+        const scoreMatch = metricText.match(/(\d+\.?\d*)\s*Heat Risk/i);
+        const tempVal = tempMatch ? parseFloat(tempMatch[1]) : 32;
+        const scoreVal = scoreMatch ? parseFloat(scoreMatch[1]) : 50;
+
+        return (scoreVal * 1.5) + (tempVal * 1.2) + sevBonus;
+      };
+
+      // Sort ALL cities strictly by Climate Seriousness Index descending (NO alphabetical sorting, NO arbitrary limits)
+      const displayAlerts = uniqueAlerts.sort((a: any, b: any) => calculateCSI(b) - calculateCSI(a));
+
+      return displayAlerts.map((a: any) => {
         const cityMatch = predictions?.find(p => p.cityName.toLowerCase() === (a.city || "").toLowerCase());
         const cityId = cityMatch ? cityMatch.cityId : (predictions[0]?.cityId || 1);
         
