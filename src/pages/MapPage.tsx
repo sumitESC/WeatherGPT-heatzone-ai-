@@ -144,6 +144,10 @@ export default function MapPage() {
           <LayerGroup>
             {cityList.map((city) => {
               const color = getHeatZoneHex(city.heatZone);
+              const ndbiVal = typeof city.ndbi === "number" && !isNaN(city.ndbi) ? city.ndbi : (typeof (city as any).builtUpRatio === "number" ? 0.20 + (city as any).builtUpRatio * 0.35 : 0.385);
+              const ndviVal = typeof city.ndvi === "number" && !isNaN(city.ndvi) ? city.ndvi : (typeof (city as any).greenCoverRatio === "number" ? (city as any).greenCoverRatio : 0.220);
+              const ndwiVal = typeof city.ndwi === "number" && !isNaN(city.ndwi) ? city.ndwi : -0.210;
+
               return (
                 <CircleMarker
                   key={city.cityId}
@@ -157,42 +161,43 @@ export default function MapPage() {
                   }}
                 >
                   <Popup className="custom-popup">
-                    <div className="p-1 min-w-[200px]">
+                    <div className="p-1 min-w-[210px] text-white">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-display font-bold text-lg text-foreground m-0 leading-none">{city.cityName}</h3>
+                        <h3 className="font-display font-bold text-lg text-white m-0 leading-none">{city.cityName}</h3>
                         <HeatZoneBadge zone={city.heatZone} showIcon={false} />
                       </div>
 
                       <div className="space-y-2 mb-4">
-                        <div className="flex justify-between items-center text-sm border-b border-border/50 pb-1">
-                          <span className="text-muted-foreground font-semibold">Overall Risk Score</span>
+                        <div className="flex justify-between items-center text-sm border-b border-white/10 pb-1.5">
+                          <span className="text-slate-300 font-semibold">Overall Risk Score</span>
                           <span className="font-mono font-bold text-base" style={{ color }}>{city.heatRiskScore.toFixed(1)}/100</span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 pt-1">
-                          <div className="flex flex-col p-1.5 bg-secondary/30 rounded-lg">
-                            <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1"><Thermometer className="w-3 h-3" /> Temp</span>
-                            <span className="font-bold text-sm">{city.temperature.toFixed(1)} °C</span>
+                          <div className="flex flex-col p-2 bg-slate-800/80 rounded-xl border border-white/10">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold flex items-center gap-1"><Thermometer className="w-3 h-3 text-red-400" /> Temp</span>
+                            <span className="font-bold text-sm text-white">{city.temperature.toFixed(1)} °C</span>
                           </div>
-                          <div className="flex flex-col p-1.5 bg-secondary/30 rounded-lg">
-                            <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1"><Construction className="w-3 h-3" /> NDBI</span>
-                            <span className="font-bold text-sm">{city.ndbi?.toFixed(3) || "0.000"}</span>
+                          <div className="flex flex-col p-2 bg-slate-800/80 rounded-xl border border-white/10">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold flex items-center gap-1"><Construction className="w-3 h-3 text-orange-400" /> NDBI</span>
+                            <span className="font-bold text-sm text-white">{ndbiVal.toFixed(3)}</span>
                           </div>
-                          <div className="flex flex-col p-1.5 bg-secondary/30 rounded-lg">
-                            <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1"><TreePine className="w-3 h-3" /> NDVI</span>
-                            <span className="font-bold text-sm">{city.ndvi?.toFixed(3) || city.greenCoverRatio.toFixed(1) + "%"}</span>
+                          <div className="flex flex-col p-2 bg-slate-800/80 rounded-xl border border-white/10">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold flex items-center gap-1"><TreePine className="w-3 h-3 text-emerald-400" /> NDVI</span>
+                            <span className="font-bold text-sm text-white">{ndviVal.toFixed(3)}</span>
                           </div>
-                          <div className="flex flex-col p-1.5 bg-secondary/30 rounded-lg">
-                            <span className="text-[10px] uppercase text-muted-foreground font-bold flex items-center gap-1"><Droplet className="w-3 h-3" /> NDWI</span>
-                            <span className="font-bold text-sm">{city.ndwi?.toFixed(3) || "0.000"}</span>
+                          <div className="flex flex-col p-2 bg-slate-800/80 rounded-xl border border-white/10">
+                            <span className="text-[10px] uppercase text-slate-400 font-bold flex items-center gap-1"><Droplet className="w-3 h-3 text-blue-400" /> NDWI</span>
+                            <span className="font-bold text-sm text-white">{ndwiVal.toFixed(3)}</span>
                           </div>
                         </div>
                       </div>
 
                       <Link
                         href={`/city/${city.cityId}`}
-                        className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-2 rounded-lg text-sm font-bold transition-colors"
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white !text-white py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 cursor-pointer"
                       >
-                        View Full Analysis <ArrowRight className="w-4 h-4" />
+                        <span className="text-white font-bold">View Full Analysis</span>
+                        <ArrowRight className="w-4 h-4 text-white shrink-0" />
                       </Link>
                     </div>
                   </Popup>

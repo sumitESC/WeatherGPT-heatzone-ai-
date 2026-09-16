@@ -160,7 +160,7 @@
   background: hsl(var(--primary) / 0.5);
 }
 
-/* Recharts Customizations */
+/* Recharts & Leaflet Customizations */
 .recharts-tooltip-cursor {
   fill: hsla(226, 30%, 20%, 0.4) !important;
 }
@@ -169,16 +169,30 @@
   z-index: 10;
 }
 .leaflet-popup-content-wrapper {
-  background: hsl(var(--card)) !important;
-  color: hsl(var(--foreground)) !important;
-  border-radius: var(--radius) !important;
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
+  background: #0f172a !important;
+  color: #f8fafc !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.7) !important;
+  padding: 2px !important;
 }
 .leaflet-popup-tip {
-  background: hsl(var(--card)) !important;
-  border-top: 1px solid hsl(var(--border));
-  border-left: 1px solid hsl(var(--border));
+  background: #0f172a !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
+  color: #f8fafc !important;
+}
+.leaflet-popup-content a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+.leaflet-popup-content a.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px 8px 0 0 !important;
 }
 
 /* OpenStreetMap Dark Mode Tile Filter */

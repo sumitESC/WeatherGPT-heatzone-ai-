@@ -509,8 +509,9 @@ export async function customFetch<T = unknown>(
           return updates.map((c: any, index: number) => {
             const rawName = (c.city || c.cityName || "").toString().trim();
             const fc = FALLBACK_CITIES.find(f => f.name.toLowerCase().trim() === rawName.toLowerCase());
-            const score = c.heat_risk_score || 50;
-            const temp = c.temp_max_c || 34;
+            const fallbackPred = fc ? getFallbackHeatPrediction(fc) : null;
+            const score = c.heat_risk_score || (fallbackPred ? fallbackPred.heatRiskScore : 50);
+            const temp = c.temp_max_c || (fallbackPred ? fallbackPred.temperature : 34);
 
             // Compute dynamic zone if backend returns uniform or missing zone
             let zone = (c.heat_zone || "").toLowerCase();
@@ -521,6 +522,14 @@ export async function customFetch<T = unknown>(
               else zone = "cool";
             }
 
+            const rawNdvi = c.ndvi ?? c.NDVI ?? (fallbackPred ? fallbackPred.ndvi : (fc ? fc.ndvi : 0.22));
+            const rawNdbi = c.ndbi ?? c.NDBI ?? (fallbackPred ? fallbackPred.ndbi : 0.38);
+            const rawNdwi = c.ndwi ?? c.NDWI ?? (fallbackPred ? fallbackPred.ndwi : -0.21);
+
+            const parsedNdvi = Number(rawNdvi);
+            const parsedNdbi = Number(rawNdbi);
+            const parsedNdwi = Number(rawNdwi);
+
             return {
               id: index + 1,
               cityId: fc ? fc.id : index + 1,
@@ -528,13 +537,23 @@ export async function customFetch<T = unknown>(
               heatRiskScore: score,
               heatZone: zone,
               temperature: temp,
-              humidity: c.humidity_pct || 50,
+              humidity: c.humidity_pct || (fallbackPred ? fallbackPred.humidity : 50),
               windSpeed: c.wind_speed_kmh || 10,
               precipitation: c.precipitation_mm || 0,
-              vehicleDensity: fc ? fc.populationDensity : 12000,
+              vehicleDensity: fallbackPred ? fallbackPred.vehicleDensity : 12000,
               populationDensity: fc ? fc.populationDensity : 8500,
-              greenCoverRatio: 0.18,
-              builtUpRatio: 0.55,
+              greenCoverRatio: fallbackPred ? fallbackPred.greenCoverRatio : 0.18,
+              builtUpRatio: fallbackPred ? fallbackPred.builtUpRatio : 0.55,
+              ndvi: isNaN(parsedNdvi) ? 0.22 : parsedNdvi,
+              ndbi: isNaN(parsedNdbi) ? 0.38 : parsedNdbi,
+              ndwi: isNaN(parsedNdwi) ? -0.21 : parsedNdwi,
+              emissionIndex: c.emission_index ?? (fallbackPred ? fallbackPred.emissionIndex : 4.2),
+              urbanCanyonIndex: c.urban_canyon_index ?? (fallbackPred ? fallbackPred.urbanCanyonIndex : 0.48),
+              industrialHeatFactor: fallbackPred ? fallbackPred.industrialHeatFactor : 0.25,
+              avgBuildingHeight: fallbackPred ? fallbackPred.avgBuildingHeight : 14.5,
+              confidenceScore: fallbackPred ? fallbackPred.confidenceScore : 0.92,
+              primaryRiskDriver: c.primary_driver || (fallbackPred ? fallbackPred.primaryRiskDriver : "Concrete & Built-up Density"),
+              riskExplanation: c.causal_explanation || (fallbackPred ? fallbackPred.riskExplanation : "High surface thermal absorption detected due to dense built structures."),
               coolingIndex: 0.25,
               trafficHeatFactor: 900,
               latitude: Number(c.latitude || c.lat) || (fc ? fc.latitude : 26.8467),
