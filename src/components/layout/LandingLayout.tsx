@@ -2,6 +2,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchLiveUpdates } from "@/lib/renderApi";
+import { Flame } from "lucide-react";
 
 interface LandingLayoutProps {
   children: ReactNode;
@@ -135,7 +136,10 @@ export function LandingLayout({ children }: LandingLayoutProps) {
         {/* Main Nav Bar */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="relative z-50">
+          <Link href="/" className="relative z-50 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md animate-coin-flip shrink-0">
+              <Flame className="w-4 h-4 stroke-[2]" />
+            </div>
             <motion.span
               className="font-display font-black text-xl tracking-[0.2em] uppercase text-white"
               transition={{ duration: 0.3 }}

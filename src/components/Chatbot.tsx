@@ -881,8 +881,14 @@ export function Chatbot({ contextData }: { contextData: any }) {
 
   const toggleListen = useCallback(() => {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (isListening) recognitionRef.current?.stop();
-    else if (recognitionRef.current) { setInput(""); recognitionRef.current.start(); setIsListening(true); }
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else if (recognitionRef.current) { 
+      setInput(""); 
+      recognitionRef.current.start(); 
+      setIsListening(true); 
+    }
   }, [isListening]);
 
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, isLoading]);
@@ -1075,7 +1081,12 @@ export function Chatbot({ contextData }: { contextData: any }) {
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
-    primeAudioEngine(); if (window.speechSynthesis) window.speechSynthesis.cancel(); if (isListening) recognitionRef.current?.stop();
+    primeAudioEngine(); 
+    if (window.speechSynthesis) window.speechSynthesis.cancel(); 
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    }
     const userMsg = input.trim(); setInput("");
     setCurrentStatus("Thinking...");
     const userMsgId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -1092,7 +1103,13 @@ export function Chatbot({ contextData }: { contextData: any }) {
           <div><h3 className="font-bold text-gray-900 dark:text-white tracking-wide">Aria Intelligence</h3><p className="text-[11px] text-purple-600 dark:text-purple-300 font-medium tracking-wider uppercase">Urban Climate Platform</p></div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setIsTTSActive(!isTTSActive)} className={cn("p-2.5 rounded-full transition-colors border", isTTSActive ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30" : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10")}>
+          <button 
+            onClick={() => {
+              if (isTTSActive && window.speechSynthesis) window.speechSynthesis.cancel();
+              setIsTTSActive(!isTTSActive);
+            }} 
+            className={cn("p-2.5 rounded-full transition-colors border", isTTSActive ? "bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30" : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10")}
+          >
             {isTTSActive ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
         </div>

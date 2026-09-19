@@ -3,8 +3,9 @@ import { useGetCities, useGetCityDataset, FALLBACK_CITIES, getFallbackCityDatase
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, Brain, Car, TreePine, Droplets, Building2, Users, Loader2, PlayCircle, MapPin, ChevronDown, Check, Bot
+  ArrowLeft, Brain, Car, TreePine, Droplets, Building2, Users, Loader2, PlayCircle, MapPin, ChevronDown, Check, Bot, AlertCircle, TrendingUp, Zap, CloudLightning
 } from "lucide-react";
+import { generateLlmAdvisory } from "@/lib/llm";
 import { cn } from "@/lib/utils";
 import { Chatbot } from "@/components/Chatbot";
 
@@ -166,54 +167,6 @@ function AdvisorResults({ city }: { city: any }) {
     { name: "Water deficit", value: (rawWater / totalRaw) * 100, icon: Droplets, color: "text-cyan-400", bg: "bg-cyan-400" },
   ].sort((a, b) => b.value - a.value);
 
-  // Suggestions AI Logic
-  const suggestions = [];
-  if (vehicleDensity > 1000) {
-    suggestions.push({
-      trigger: "High vehicle density",
-      actions: ["Encourage electric vehicles", "Create traffic restricted zones", "Promote public transport"],
-      impactText: `Reducing traffic by 15% in ${safeCity.name}`,
-      impactCooling: "0.8°C",
-      icon: Car
-    });
-  }
-  if (greenRatio < 0.20) {
-    suggestions.push({
-      trigger: "Low green cover",
-      actions: ["Increase urban tree plantation", "Create green corridors", "Develop new parks"],
-      impactText: `Planting 20,000 trees in ${safeCity.name}`,
-      impactCooling: "1.2°C",
-      icon: TreePine
-    });
-  }
-  if (waterIndex < 0.05) {
-    suggestions.push({
-      trigger: "Low water availability",
-      actions: ["Build artificial lakes", "Restore ponds and rivers", "Install urban water fountains"],
-      impactText: `Creating 5 new water bodies in ${safeCity.name}`,
-      impactCooling: "0.5°C",
-      icon: Droplets
-    });
-  }
-  if (populationDensity > 4000) {
-    suggestions.push({
-      trigger: "High population density",
-      actions: ["Create more open public spaces", "Increase green rooftops", "Designate heat-relief zones"],
-      impactText: `Expanding open spaces by 10% in ${safeCity.name}`,
-      impactCooling: "0.4°C",
-      icon: Users
-    });
-  }
-  if (builtRatio > 0.40) {
-    suggestions.push({
-      trigger: "Dense built-up area",
-      actions: ["Install cool roofs", "Use reflective building materials", "Promote rooftop gardens"],
-      impactText: `Converting 20% roofs to cool roofs in ${safeCity.name}`,
-      impactCooling: "0.9°C",
-      icon: Building2
-    });
-  }
-
   // Score Calculation
   const penalty = Math.min((totalRaw / 125) * 100, 95);
   const score = Math.round(100 - penalty);
@@ -224,6 +177,39 @@ function AdvisorResults({ city }: { city: any }) {
   else if (score < 60) { riskText = "Moderate heat risk"; riskColor = "text-orange-500"; }
   else if (score < 80) { riskText = "Good heat management"; riskColor = "text-yellow-400"; }
   else { riskText = "Sustainable city"; riskColor = "text-green-400"; }
+
+  const [llmAdvisory, setLlmAdvisory] = useState<any>(null);
+  const [llmError, setLlmError] = useState<string | null>(null);
+  const [isGeneratingAdvisory, setIsGeneratingAdvisory] = useState(false);
+
+  useEffect(() => {
+    async function generateAdvisory() {
+      setIsGeneratingAdvisory(true);
+      setLlmAdvisory(null);
+      setLlmError(null);
+      try {
+        const telemetry = {
+          city_name: safeCity.name,
+          populationDensity: populationDensity,
+          ndvi: greenRatio,
+          ndbi: builtRatio,
+          vehicleDensity: vehicleDensity,
+          waterIndex: waterIndex
+        };
+
+        const result = await generateLlmAdvisory(telemetry);
+        setLlmAdvisory(result);
+      } catch (e: any) {
+        setLlmError(e.message || "Failed to connect to AI Provider");
+        console.error(e);
+      } finally {
+        setIsGeneratingAdvisory(false);
+      }
+    }
+    
+    // Auto-generate when city changes
+    generateAdvisory();
+  }, [safeCity.name, populationDensity, greenRatio, builtRatio, vehicleDensity, waterIndex]);
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -283,45 +269,65 @@ function AdvisorResults({ city }: { city: any }) {
         </div>
 
         {/* Right Column: AI Suggestions & Impacts */}
-        <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-lg space-y-6">
+        <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-lg space-y-6 flex flex-col h-full max-h-[600px]">
           <h3 className="font-bold text-lg flex items-center gap-2">
             <Brain className="w-5 h-5 text-purple-400" />
             AI Reduction Suggestions
           </h3>
           
-          <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-            {suggestions.map((surg, i) => (
-              <div key={i} className="bg-secondary/40 border border-border/50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 bg-background rounded-md">
-                    <surg.icon className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                    If {surg.trigger}
-                  </span>
+          <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1 relative">
+            {isGeneratingAdvisory ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-card/50 backdrop-blur-sm z-10 rounded-xl">
+                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                <p className="text-sm text-muted-foreground font-medium">AI Advisor is analyzing {safeCity.name}...</p>
+              </div>
+            ) : llmError ? (
+              <div className="flex flex-col items-center justify-center h-full text-center p-6 bg-red-500/5 rounded-xl border border-dashed border-red-500/30">
+                <AlertCircle className="w-8 h-8 text-red-500 mb-3 opacity-80" />
+                <p className="text-sm text-red-500 font-bold mb-1">API Error Occurred</p>
+                <p className="text-xs text-red-400/80 mb-4">{llmError}</p>
+                {llmError.toLowerCase().includes("api key") && (
+                  <p className="text-xs text-foreground bg-card border border-border p-3 rounded-lg shadow-sm mt-3">
+                    <strong>Missing or Invalid API Key:</strong> The key in <code className="bg-secondary px-1 py-0.5 rounded">heatzone-frontend/.env</code> was rejected by the AI Provider. Please generate a valid key and paste it in.
+                  </p>
+                )}
+              </div>
+            ) : llmAdvisory ? (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 shadow-sm space-y-4">
+                <div>
+                  <h4 className="font-bold text-sm flex items-center gap-2 mb-1"><AlertCircle className="w-4 h-4 text-primary" /> Assessment</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{llmAdvisory.assessment}</p>
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm flex items-center gap-2 mb-1"><TrendingUp className="w-4 h-4 text-amber-500" /> Primary Drivers</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{llmAdvisory.primaryDrivers}</p>
                 </div>
                 
-                <ul className="space-y-2 mb-4">
-                  {surg.actions.map(action => (
-                    <li key={action} className="text-sm flex items-start gap-2">
-                      <span className="text-purple-400 mt-0.5">•</span>
-                      <span>{action}</span>
-                    </li>
+                <div className="space-y-3">
+                  <h4 className="font-bold text-sm flex items-center gap-2"><Zap className="w-4 h-4 text-yellow-500" /> Immediate Actions</h4>
+                  {llmAdvisory.immediateActions?.map((act: string, i: number) => (
+                    <div key={i} className="bg-secondary/40 border border-border/50 rounded-lg p-3 text-xs text-foreground">
+                      {act}
+                    </div>
                   ))}
-                </ul>
-
-                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
-                  <div className="text-xs text-muted-foreground mb-1">Expected Impact</div>
-                  <div className="text-sm font-medium text-primary mb-1">{surg.impactText}</div>
-                  <div className="flex justify-between items-center font-bold text-sm">
-                    <span>Estimated Cooling</span>
-                    <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs">-{surg.impactCooling}</span>
-                  </div>
                 </div>
+
+                {llmAdvisory.strategicInterventions?.length > 0 && (
+                  <div className="space-y-3 pt-2 border-t border-border/50">
+                    <h4 className="font-bold text-sm flex items-center gap-2"><Building2 className="w-4 h-4 text-blue-500" /> Strategic Planning</h4>
+                    {llmAdvisory.strategicInterventions?.map((act: string, i: number) => (
+                      <div key={i} className="bg-secondary/40 border border-border/50 rounded-lg p-3 text-xs text-foreground">
+                        {act}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
-            {suggestions.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">City is highly optimized. Maintain current strategies.</p>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-6 bg-secondary/20 rounded-xl border border-dashed border-border">
+                <Brain className="w-8 h-8 text-muted-foreground mb-3 opacity-50" />
+                <p className="text-sm text-muted-foreground">Select a city to generate live AI reduction suggestions using Gemini.</p>
+              </div>
             )}
           </div>
         </div>

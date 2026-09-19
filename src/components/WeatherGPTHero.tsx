@@ -45,7 +45,7 @@ export default function WeatherGPTHero({ whatsappUrl = "https://wa.me/9191256000
           onClick={() => handleOpenAssistant()} 
           className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group select-none"
         >
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md group-hover:scale-105 transition shrink-0">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-md group-hover:scale-105 transition shrink-0 animate-coin-flip">
             <Sparkles className="w-4 h-4 stroke-[2]" />
           </div>
           <span className="font-extrabold text-lg sm:text-xl tracking-tight text-foreground">
