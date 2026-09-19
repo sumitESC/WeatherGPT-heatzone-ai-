@@ -252,9 +252,9 @@ export function LandingLayout({ children }: LandingLayoutProps) {
             <div>
               <h4 className="font-mono text-xs uppercase tracking-widest text-background/50 mb-6">Follow Us</h4>
               <ul className="space-y-4 text-sm">
-                <li><a href="#" className="hover:opacity-70 transition-opacity">LinkedIn</a></li>
-                <li><a href="#" className="hover:opacity-70 transition-opacity">GitHub</a></li>
-                <li><a href="#" className="hover:opacity-70 transition-opacity">X / Twitter</a></li>
+                <li><a href="https://www.linkedin.com/in/sumit-kushwaha" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">LinkedIn</a></li>
+                <li><a href="https://github.com/sumitESC" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">GitHub</a></li>
+                <li><a href="https://wa.me/919125600020" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">WhatsApp</a></li>
               </ul>
             </div>
 
@@ -271,9 +271,10 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               <h4 className="font-mono text-xs uppercase tracking-widest text-background/50 mb-6">Contact</h4>
               <p className="text-background/70 leading-relaxed mb-4 text-sm">
                 Uttar Pradesh, India<br />
+                Created by Sumit Kushwaha<br />
                 Heat Intelligence Lab
               </p>
-              <p className="font-mono text-sm">hello@heatzone.ai</p>
+              <p className="font-mono text-sm">iamkussumit@gmail.com</p>
             </div>
           </div>
 
@@ -290,7 +291,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               <a href="#" className="hover:text-background transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-background transition-colors">Accessibility</a>
             </div>
-            <p>© {new Date().getFullYear()} HeatZone AI. Urban Resilience.</p>
+            <p>© {new Date().getFullYear()} HeatZone AI. Created by Sumit Kushwaha. All rights reserved.</p>
           </div>
         </div>
       </footer>

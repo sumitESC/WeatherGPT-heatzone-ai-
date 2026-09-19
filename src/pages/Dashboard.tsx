@@ -32,11 +32,21 @@ export default function Dashboard() {
   const sortedPredictions = [...predictions].sort((a, b) => b.heatRiskScore - a.heatRiskScore);
 
   // Zone distribution data for pie chart
+  const distributionCounts = { cool: 0, moderate: 0, high: 0, extreme: 0 };
+  predictions.forEach(p => {
+    const zone = (p.heatZone || "moderate").toLowerCase();
+    if (distributionCounts[zone as keyof typeof distributionCounts] !== undefined) {
+      distributionCounts[zone as keyof typeof distributionCounts]++;
+    } else {
+      distributionCounts.moderate++;
+    }
+  });
+
   const zoneDistribution = [
-    { name: "Cool", value: overview.coolCities || 0, color: "#15803d" },
-    { name: "Moderate", value: overview.moderateHeatCities || 0, color: "#a3e635" },
-    { name: "High", value: overview.highHeatCities || 0, color: "#f97316" },
-    { name: "Extreme", value: overview.extremeHeatCities || 0, color: "#ef4444" },
+    { name: "Cool", value: distributionCounts.cool, color: "#15803d" },
+    { name: "Moderate", value: distributionCounts.moderate, color: "#a3e635" },
+    { name: "High", value: distributionCounts.high, color: "#f97316" },
+    { name: "Extreme", value: distributionCounts.extreme, color: "#ef4444" },
   ].filter(d => d.value > 0);
 
   return (

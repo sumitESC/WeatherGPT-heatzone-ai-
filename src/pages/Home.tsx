@@ -3,8 +3,11 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from "fra
 import { Link } from "wouter";
 import { 
   Satellite, Building2, Cpu, Flame, CloudRain, ShieldAlert, Globe, 
-  Activity, MapPin, ArrowRight, Zap, Car, Leaf, Factory, Compass
+  Activity, MapPin, ArrowRight, Zap, Car, Leaf, Factory, Compass,
+  MessageSquare
 } from "lucide-react";
+import WhatsAppCard from "../components/WhatsAppCard";
+import WeatherGPTHero from "../components/WeatherGPTHero";
 
 /* ─── Reusable scroll-reveal wrapper ─── */
 function Reveal({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -170,7 +173,27 @@ export default function Home() {
       {/* Marquee strip */}
       <Marquee text="UTTAR PRADESH CLIMATE PLATFORM · SATELLITE REMOTE SENSING · LOCAL MICROCLIMATE ANALYSIS · PYTORCH ML FORECAST" />
 
-      {/* ═══════════════ 2. OUR AIM & MISSION ═══════════════ */}
+      {/* ═══════════════ 2. STATISTICS COUNTER ═══════════════ */}
+      <section className="py-20 bg-primary text-primary-foreground">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { number: "75", label: "UP Cities Monitored", sublabel: "Continuous Coverage" },
+            { number: "16-Day", label: "Predictive Horizon", sublabel: "PyTorch ML Ensemble" },
+            { number: "<1ms", label: "In-Memory Engine", sublabel: "Real-Time Query Response" },
+            { number: "24/7", label: "Emergency Alerts", sublabel: "Statewide Dispatch" },
+          ].map((stat, i) => (
+            <Reveal key={stat.label} delay={i * 0.1}>
+              <div className="text-center md:text-left">
+                <p className="font-display text-5xl md:text-6xl font-bold tracking-tighter">{stat.number}</p>
+                <p className="font-mono text-xs tracking-widest uppercase mt-3 text-primary-foreground/80">{stat.label}</p>
+                <p className="font-sans text-xs text-primary-foreground/50 mt-1">{stat.sublabel}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════ 3. OUR AIM & MISSION ═══════════════ */}
       <section className="py-24 md:py-36 px-6 md:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
@@ -252,7 +275,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ 3. DUAL TECHNOLOGY ARCHITECTURE SHOWCASE ═══════════════ */}
+      {/* ═══════════════ 4. DUAL TECHNOLOGY ARCHITECTURE SHOWCASE ═══════════════ */}
       <section className="py-24 bg-card/60 border-y border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
@@ -342,27 +365,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ 4. STATISTICS COUNTER ═══════════════ */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { number: "75", label: "UP Cities Monitored", sublabel: "Continuous Coverage" },
-            { number: "16-Day", label: "Predictive Horizon", sublabel: "PyTorch ML Ensemble" },
-            { number: "<1ms", label: "In-Memory Engine", sublabel: "Real-Time Query Response" },
-            { number: "24/7", label: "Emergency Alerts", sublabel: "Statewide Dispatch" },
-          ].map((stat, i) => (
-            <Reveal key={stat.label} delay={i * 0.1}>
-              <div className="text-center md:text-left">
-                <p className="font-display text-5xl md:text-6xl font-bold tracking-tighter">{stat.number}</p>
-                <p className="font-mono text-xs tracking-widest uppercase mt-3 text-primary-foreground/80">{stat.label}</p>
-                <p className="font-sans text-xs text-primary-foreground/50 mt-1">{stat.sublabel}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+      {/* ═══════════════ 5. WEATHERGPT INTEGRATION ═══════════════ */}
+      <WeatherGPTHero />
+      
+      <section className="py-12 bg-background border-y border-border">
+        <WhatsAppCard />
       </section>
 
-      {/* ═══════════════ 5. CTA SECTION ═══════════════ */}
+      {/* ═══════════════ 6. CTA SECTION ═══════════════ */}
       <section className="py-28 px-6 text-center bg-primary text-primary-foreground relative overflow-hidden">
         <Reveal>
           <span className="font-mono text-xs tracking-widest uppercase text-primary-foreground/50 mb-6 block">Ready to Protect Uttar Pradesh</span>
