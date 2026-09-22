@@ -33,10 +33,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex items-center gap-3">
           <img 
             src={`${import.meta.env.BASE_URL}images/logo-mark.png`} 
-            alt="HeatZone AI Logo" 
+            alt="WeatherGPT Logo" 
             className="w-8 h-8 object-contain"
           />
-          <span className="font-display font-bold text-xl tracking-tight text-foreground">HeatZone <span className="text-primary">AI</span></span>
+          <span className="font-display font-bold text-xl tracking-tight text-foreground">Weather<span className="text-primary">GPT</span></span>
         </div>
         {/* Close button — only visible on mobile */}
         <button 

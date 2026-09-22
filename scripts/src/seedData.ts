@@ -481,7 +481,7 @@ function computeHeatScore(city: typeof UP_CITIES[0], temp: number, humidity: num
 }
 
 async function seed() {
-  console.log("🌱 Seeding HeatZone AI database...");
+  console.log("🌱 Seeding WeatherGPT database...");
   await db.delete(recommendationsTable);
   await db.delete(heatPredictionsTable);
   await db.delete(weatherDataTable);

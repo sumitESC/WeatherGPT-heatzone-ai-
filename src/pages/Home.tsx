@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect } from "react";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { Link } from "wouter";
 import { 
   Satellite, Building2, Cpu, Flame, CloudRain, ShieldAlert, Globe, 
   Activity, MapPin, ArrowRight, Zap, Car, Leaf, Factory, Compass,
-  MessageSquare
+  MessageSquare, Wind, Droplets, Mic, Plane, TreePine, Database
 } from "lucide-react";
 import WhatsAppCard from "../components/WhatsAppCard";
 import WeatherGPTHero from "../components/WeatherGPTHero";
@@ -86,7 +86,7 @@ export default function Home() {
         <motion.div className="absolute inset-0 z-0" style={{ y: heroY }}>
           <img
             src={`${BASE}images/landing/hero.png`}
-            alt="Uttar Pradesh city heat distribution"
+            alt="WeatherGPT global intelligence distribution"
             className="w-full h-full object-cover opacity-35 scale-105"
           />
         </motion.div>
@@ -98,7 +98,7 @@ export default function Home() {
         {/* Content */}
         <motion.div className="relative z-10 text-center px-6 max-w-5xl mx-auto py-16" style={{ opacity: heroOpacity }}>
           
-          {/* Live Real-Time Backend Ticker Banner */}
+          {/* Live Real-Time Banner */}
           {topAlert ? (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -117,7 +117,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 text-xs font-mono uppercase tracking-widest text-primary-foreground/90 mb-8"
             >
               <Compass className="w-3.5 h-3.5 text-yellow-400 animate-spin-slow" />
-              UTTAR PRADESH URBAN HEAT INTELLIGENCE SYSTEM
+              INTELLIGENT CONVERSATIONAL WEATHER PLATFORM
             </motion.div>
           )}
 
@@ -126,12 +126,12 @@ export default function Home() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="font-display font-extrabold text-5xl md:text-8xl lg:text-[7rem] leading-[0.9] tracking-tighter uppercase mb-6">
-              MAPPING URBAN
+            <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-tighter uppercase mb-6">
+              AI-POWERED
               <br />
-              HEAT ISLANDS
+              CONVERSATIONAL
               <br />
-              ACROSS UTTAR PRADESH
+              WEATHER INTELLIGENCE
             </h1>
           </motion.div>
 
@@ -141,7 +141,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             className="font-sans text-base md:text-xl text-primary-foreground/80 max-w-3xl mx-auto leading-relaxed mb-10"
           >
-            Fusing <strong>Satellite Remote Sensing</strong> (NASA MODIS & Sentinel-2) with <strong>Local Microclimate Analytics</strong> (Street Canyon & Vehicular Exhaust) to protect 240+ Million UP residents from severe heatwaves.
+            Integrating <strong>meteorological datasets</strong> (NWP Models), <strong>forecasting engines</strong>, and <strong>disaster warning systems</strong> to provide accurate, contextual, and multilingual weather intelligence through natural language.
           </motion.p>
 
           {/* Dual Action Buttons */}
@@ -155,32 +155,32 @@ export default function Home() {
               href="/dashboard"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-3 font-mono text-xs tracking-widest uppercase bg-primary-foreground text-primary px-8 py-4 font-bold hover:bg-white hover:shadow-2xl transition-all duration-300 shadow-xl"
             >
-              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-              Enter UP State Dashboard
+              <span className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
+              Launch Web Dashboard
             </Link>
             
             <Link
-              href="/map"
+              href="/advisor"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-3 font-mono text-xs tracking-widest uppercase border border-primary-foreground/40 px-8 py-4 text-primary-foreground hover:bg-primary-foreground/10 transition-all duration-300"
             >
-              <Satellite className="w-4 h-4 text-blue-400" />
-              Explore Satellite Heat Map
+              <MessageSquare className="w-4 h-4 text-emerald-400" />
+              Start Natural Conversation
             </Link>
           </motion.div>
         </motion.div>
       </section>
 
       {/* Marquee strip */}
-      <Marquee text="UTTAR PRADESH CLIMATE PLATFORM · SATELLITE REMOTE SENSING · LOCAL MICROCLIMATE ANALYSIS · PYTORCH ML FORECAST" />
+      <Marquee text="REAL-TIME FORECASTS · NATURAL LANGUAGE QUERIES · EXTREME WEATHER ALERTS · MULTILINGUAL SUPPORT · CLIMATE ANALYTICS" />
 
-      {/* ═══════════════ 2. STATISTICS COUNTER ═══════════════ */}
+      {/* ═══════════════ 2. KEY FEATURES ═══════════════ */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { number: "75", label: "UP Cities Monitored", sublabel: "Continuous Coverage" },
-            { number: "16-Day", label: "Predictive Horizon", sublabel: "PyTorch ML Ensemble" },
-            { number: "<1ms", label: "In-Memory Engine", sublabel: "Real-Time Query Response" },
-            { number: "24/7", label: "Emergency Alerts", sublabel: "Statewide Dispatch" },
+            { number: "24/7", label: "Real-Time API", sublabel: "GFS / WRF NWP Models" },
+            { number: "15+", label: "Indian Languages", sublabel: "Multilingual NLP Engine" },
+            { number: "0ms", label: "Voice Access", sublabel: "For Rural Accessibility" },
+            { number: "360°", label: "Multi-Domain", sublabel: "Agri, Aviation, Marine" },
           ].map((stat, i) => (
             <Reveal key={stat.label} delay={i * 0.1}>
               <div className="text-center md:text-left">
@@ -193,80 +193,80 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ 3. OUR AIM & MISSION ═══════════════ */}
+      {/* ═══════════════ 3. PROBLEM & MISSION ═══════════════ */}
       <section className="py-24 md:py-36 px-6 md:px-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           <Reveal className="lg:col-span-5">
             <span className="font-mono text-xs tracking-widest uppercase text-primary font-bold block mb-3">OUR CORE MISSION</span>
             <h2 className="font-display text-4xl md:text-6xl uppercase tracking-tighter leading-[0.9] mb-6">
-              PROTECTING UTTAR PRADESH FROM SILENT HEATWAVES
+              DEMOCRATIZING WEATHER INFORMATION
             </h2>
             <p className="font-sans text-muted-foreground text-base leading-relaxed mb-6">
-              Uttar Pradesh is experiencing rapid urban expansion across major economic corridors—from Kanpur's industrial belt to Lucknow's high-density canyons and Bundelkhand's extreme thermal zones.
+              Weather information is often distributed through multiple portals, bulletins, satellite products, and complex forecast systems. This fragmentation makes it difficult for common users, researchers, disaster managers, and government agencies to quickly obtain actionable insights.
             </p>
             <p className="font-sans text-muted-foreground text-base leading-relaxed mb-8">
-              Concrete surfaces, vehicle exhaust, and depleted green cover trap surface heat, making urban centers up to <strong>8°C hotter</strong> than surrounding rural regions. Our aim is to provide real-time satellite remote sensing and local microclimate warnings to municipal authorities and citizens.
+              There is an urgent need for an <strong>intelligent conversational platform</strong>. WeatherGPT bridges this gap by providing real-time data, early warnings, climate analysis, and decision support directly through natural language queries.
             </p>
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
               <div>
-                <p className="font-display text-3xl font-extrabold text-foreground">75</p>
-                <p className="font-mono text-xs text-muted-foreground uppercase">UP Districts Monitored</p>
+                <p className="font-display text-3xl font-extrabold text-foreground">Fast</p>
+                <p className="font-mono text-xs text-muted-foreground uppercase">Dissemination</p>
               </div>
               <div>
-                <p className="font-display text-3xl font-extrabold text-primary">240M+</p>
-                <p className="font-mono text-xs text-muted-foreground uppercase">Residents Safeguarded</p>
+                <p className="font-display text-3xl font-extrabold text-primary">Better</p>
+                <p className="font-mono text-xs text-muted-foreground uppercase">Preparedness</p>
               </div>
             </div>
           </Reveal>
 
-          {/* Staggered Visual Grid */}
+          {/* Staggered Visual Grid for Use Cases */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Reveal delay={0.1}>
               <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-primary/50 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
-                  <Satellite className="w-6 h-6 text-blue-400" />
+                <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4">
+                  <Leaf className="w-6 h-6 text-green-400" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-foreground">Satellite Remote Sensing</h3>
+                <h3 className="font-bold text-lg mb-2 text-foreground">Agricultural Advisories</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Continuous processing of NASA MODIS Land Surface Temperature (LST) and Sentinel-2 NDVI/NDBI vegetation vs concrete indices.
+                  Farmers receive targeted crop-weather advisories to optimize sowing schedules and protect against frost or heat stress.
                 </p>
               </div>
             </Reveal>
 
             <Reveal delay={0.2} className="sm:mt-8">
               <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-primary/50 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-4">
-                  <Building2 className="w-6 h-6 text-orange-400" />
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+                  <Plane className="w-6 h-6 text-blue-400" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-foreground">Local Microclimate Analysis</h3>
+                <h3 className="font-bold text-lg mb-2 text-foreground">Aviation Briefings</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Street-level urban canyon modeling, 3D building height heat retention, AC thermal discharge, and vehicular traffic exhaust factors.
+                  Pilots and dispatchers access instant atmospheric conditions, wind vectors, and visibility thresholds via conversational interfaces.
                 </p>
               </div>
             </Reveal>
 
             <Reveal delay={0.3}>
               <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-primary/50 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
-                  <Cpu className="w-6 h-6 text-purple-400" />
+                <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+                  <ShieldAlert className="w-6 h-6 text-red-400" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-foreground">16-Day PyTorch ML Engine</h3>
+                <h3 className="font-bold text-lg mb-2 text-foreground">Disaster Management</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Custom deep learning ensemble models predicting 16-day daily heat risk scores, rainfall probabilities, and primary risk drivers.
+                  Rapid flood and cyclone early warning dissemination for citizens and emergency response teams during extreme events.
                 </p>
               </div>
             </Reveal>
 
             <Reveal delay={0.4} className="sm:mt-8">
               <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-xl relative overflow-hidden group hover:border-primary/50 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
-                  <Zap className="w-6 h-6 text-emerald-400" />
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                  <Building2 className="w-6 h-6 text-purple-400" />
                 </div>
-                <h3 className="font-bold text-lg mb-2 text-foreground">Actionable AI Interventions</h3>
+                <h3 className="font-bold text-lg mb-2 text-foreground">Smart City Monitoring</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Generates targeted municipal cooling protocols, cool roof installation targets, and emergency cooling center placements.
+                  Urban planners retrieve real-time air quality metrics, thermal distributions, and historical climate analytics for resilience planning.
                 </p>
               </div>
             </Reveal>
@@ -275,88 +275,88 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ 4. DUAL TECHNOLOGY ARCHITECTURE SHOWCASE ═══════════════ */}
+      {/* ═══════════════ 4. SYSTEM ARCHITECTURE ═══════════════ */}
       <section className="py-24 bg-card/60 border-y border-border">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           
           <Reveal className="text-center max-w-3xl mx-auto mb-16">
-            <span className="font-mono text-xs tracking-widest uppercase text-primary font-bold block mb-2">OUR DUAL ENGINE ARCHITECTURE</span>
+            <span className="font-mono text-xs tracking-widest uppercase text-primary font-bold block mb-2">SCALABLE MULTI-DOMAIN PLATFORM</span>
             <h2 className="font-display text-4xl md:text-6xl uppercase tracking-tighter">
-              HOW HEATZONE AI ANALYZES UTTAR PRADESH
+              HOW WEATHERGPT WORKS
             </h2>
             <p className="font-sans text-muted-foreground mt-4 text-base">
-              Combining macro satellite earth observation with micro street-level sensors to deliver unprecedented accuracy.
+              A unified architecture that bridges vast meteorological databases with modern LLM conversational capabilities.
             </p>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             
-            {/* Engine 1: Satellite Remote Sensing */}
+            {/* Engine 1: Conversational AI Engine */}
             <Reveal delay={0.1}>
               <div className="bg-background border border-border rounded-3xl p-8 relative overflow-hidden shadow-2xl h-full flex flex-col justify-between">
                 <div className="absolute top-0 right-0 p-32 bg-blue-500/5 rounded-bl-full pointer-events-none" />
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">MACRO LAYER 01</span>
-                    <Satellite className="w-7 h-7 text-blue-400" />
+                    <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">INTELLIGENCE LAYER</span>
+                    <Cpu className="w-7 h-7 text-blue-400" />
                   </div>
-                  <h3 className="font-display text-2xl uppercase font-bold mb-4 text-foreground">SATELLITE REMOTE SENSING</h3>
+                  <h3 className="font-display text-2xl uppercase font-bold mb-4 text-foreground">CONVERSATIONAL AI ENGINE</h3>
                   <ul className="space-y-3 text-sm text-muted-foreground mb-8">
                     <li className="flex items-start gap-2">
                       <span className="text-blue-400 font-bold">•</span>
-                      <span><strong>NDVI (Vegetation Index):</strong> Tracks green canopy health and urban tree loss across UP districts.</span>
+                      <span><strong>Natural Language Processing:</strong> Understands complex intent extraction from informal weather queries.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-400 font-bold">•</span>
-                      <span><strong>NDBI (Built-Up Index):</strong> Maps asphalt, roof concrete, and impervious surface absorption.</span>
+                      <span><strong>Multilingual Core:</strong> Built-in support for Indian languages, enabling widespread regional access.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-400 font-bold">•</span>
-                      <span><strong>NDWI (Water Index):</strong> Monitors surface water bodies and riverine cooling zones.</span>
+                      <span><strong>Voice-Enabled Interaction:</strong> Breaking literacy barriers in rural areas with seamless voice-to-text integration.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-blue-400 font-bold">•</span>
-                      <span><strong>NASA LST Surface Thermal Data:</strong> Measures actual ground radiant surface heat.</span>
+                      <span><strong>LLM Models Integration:</strong> Compatible with OpenAI, Llama, Gemini for robust reasoning and advisory generation.</span>
                     </li>
                   </ul>
                 </div>
-                <Link href="/map" className="inline-flex items-center gap-2 text-xs font-mono uppercase text-blue-400 font-bold hover:underline">
-                  Launch Satellite Map Layer →
+                <Link href="/advisor" className="inline-flex items-center gap-2 text-xs font-mono uppercase text-blue-400 font-bold hover:underline">
+                  Try the Conversational UI →
                 </Link>
               </div>
             </Reveal>
 
-            {/* Engine 2: Local Microclimate Analysis */}
+            {/* Engine 2: Data & Integration Layer */}
             <Reveal delay={0.2}>
               <div className="bg-background border border-border rounded-3xl p-8 relative overflow-hidden shadow-2xl h-full flex flex-col justify-between">
                 <div className="absolute top-0 right-0 p-32 bg-orange-500/5 rounded-bl-full pointer-events-none" />
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <span className="font-mono text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">MICRO LAYER 02</span>
-                    <Building2 className="w-7 h-7 text-orange-400" />
+                    <span className="font-mono text-xs font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">DATA PIPELINE</span>
+                    <Database className="w-7 h-7 text-orange-400" />
                   </div>
-                  <h3 className="font-display text-2xl uppercase font-bold mb-4 text-foreground">LOCAL MICROCLIMATE ANALYSIS</h3>
+                  <h3 className="font-display text-2xl uppercase font-bold mb-4 text-foreground">METEOROLOGICAL INTEGRATION</h3>
                   <ul className="space-y-3 text-sm text-muted-foreground mb-8">
                     <li className="flex items-start gap-2">
                       <span className="text-orange-400 font-bold">•</span>
-                      <span><strong>Urban Canyon Index:</strong> Evaluates 3D building height ratio and street heat entrapment.</span>
+                      <span><strong>NWP Models Integration:</strong> Directly queries massive numerical weather prediction models (GFS/WRF).</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-orange-400 font-bold">•</span>
-                      <span><strong>Vehicular Thermal Exhaust:</strong> Analyzes 2W, 4W, and commercial transport heat discharge.</span>
+                      <span><strong>Real-Time Data Ingestion:</strong> Scalable backend utilizing MQTT, WebSocket, and WIS2.0 frameworks.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-orange-400 font-bold">•</span>
-                      <span><strong>AC HVAC Discharge Index:</strong> Quantifies artificial heat output from air conditioning units.</span>
+                      <span><strong>GIS & Spatial Tools:</strong> Evaluates location-based alerts using coordinate-driven APIs.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-orange-400 font-bold">•</span>
-                      <span><strong>Industrial Emission Index:</strong> Tracks factory heat exhaust in UP manufacturing hubs.</span>
+                      <span><strong>Persistent Storage:</strong> Scalable PostgreSQL / MongoDB databases orchestrating historical climate trend analytics.</span>
                     </li>
                   </ul>
                 </div>
-                <Link href="/analytics" className="inline-flex items-center gap-2 text-xs font-mono uppercase text-orange-400 font-bold hover:underline">
-                  View Analytics Engine →
+                <Link href="/dashboard" className="inline-flex items-center gap-2 text-xs font-mono uppercase text-orange-400 font-bold hover:underline">
+                  View Data Dashboards →
                 </Link>
               </div>
             </Reveal>
@@ -375,27 +375,27 @@ export default function Home() {
       {/* ═══════════════ 6. CTA SECTION ═══════════════ */}
       <section className="py-28 px-6 text-center bg-primary text-primary-foreground relative overflow-hidden">
         <Reveal>
-          <span className="font-mono text-xs tracking-widest uppercase text-primary-foreground/50 mb-6 block">Ready to Protect Uttar Pradesh</span>
+          <span className="font-mono text-xs tracking-widest uppercase text-primary-foreground/50 mb-6 block">Unlock Meteorological Intelligence</span>
           <h2 className="font-display text-5xl md:text-8xl uppercase tracking-tighter leading-[0.85] max-w-4xl mx-auto mb-8">
-            EVERY DEGREE
+            INTELLIGENCE
             <br />
-            MATTERS
+            ON DEMAND
           </h2>
           <p className="font-sans text-base md:text-lg text-primary-foreground/75 max-w-xl mx-auto mb-10 leading-relaxed">
-            Access real-time urban heat risk scores, satellite remote sensing diagnostics, and 16-day predictive forecasts for any city in Uttar Pradesh.
+            Access accurate, scalable, and multilingual weather analytics globally through our AI-powered conversational chatbot platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/dashboard"
               className="inline-flex items-center justify-center gap-3 font-mono text-xs tracking-widest uppercase bg-primary-foreground text-primary px-10 py-5 font-bold hover:opacity-90 transition-opacity"
             >
-              Open UP State Dashboard
+              Open Web Dashboard
             </Link>
             <Link
               href="/advisor"
               className="inline-flex items-center justify-center gap-3 font-mono text-xs tracking-widest uppercase border border-primary-foreground/40 px-10 py-5 hover:bg-primary-foreground/10 transition-colors"
             >
-              Ask AI Climate Advisor
+              Start Chatting
             </Link>
           </div>
         </Reveal>

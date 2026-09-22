@@ -1,5 +1,5 @@
 /**
- * HeatZone AI — Render Backend API Service
+ * WeatherGPT — Render Backend API Service
  * Base URL: https://heatzone-backend.onrender.com
  */
 

@@ -144,7 +144,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               className="font-display font-black text-xl tracking-[0.2em] uppercase text-white"
               transition={{ duration: 0.3 }}
             >
-              HeatZone AI
+              WeatherGPT
             </motion.span>
           </Link>
 
@@ -285,7 +285,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
           {/* Huge logo text */}
           <div className="border-t border-background/15 pt-12 text-center overflow-hidden">
             <h2 className="font-display font-bold text-[11vw] leading-none tracking-tight whitespace-nowrap opacity-90">
-              HEATZONE AI
+              WeatherGPT
             </h2>
           </div>
 
@@ -295,7 +295,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               <a href="#" className="hover:text-background transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-background transition-colors">Accessibility</a>
             </div>
-            <p>© {new Date().getFullYear()} HeatZone AI. Created by Sumit Kushwaha. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} WeatherGPT. Created by Sumit Kushwaha. All rights reserved.</p>
           </div>
         </div>
       </footer>

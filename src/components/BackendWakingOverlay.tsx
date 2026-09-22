@@ -154,7 +154,7 @@ export function BackendWakingOverlay() {
             </h2>
 
             <p className="text-sm text-muted-foreground leading-relaxed px-2">
-              The HeatZone AI backend server is hosted on <span className="font-semibold text-foreground">Render</span>. 
+              The WeatherGPT backend server is hosted on <span className="font-semibold text-foreground">Render</span>. 
               Because free tier servers spin down during inactivity, cold starts take <span className="font-semibold text-primary">30 to 60 seconds</span> to activate.
             </p>
           </div>

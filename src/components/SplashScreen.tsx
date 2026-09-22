@@ -69,7 +69,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             <div className="absolute inset-0 blur-2xl bg-primary/30 rounded-full scale-150" />
             <img
               src={`${import.meta.env.BASE_URL}images/logo-mark.png`}
-              alt="HeatZone AI"
+              alt="WeatherGPT"
               className="w-20 h-20 relative z-10 drop-shadow-2xl"
             />
             {/* Orbiting ring */}
@@ -90,7 +90,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <h1 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight text-foreground">
-              HeatZone <span className="text-primary">AI</span>
+              Weather<span className="text-primary">GPT</span>
             </h1>
             <motion.p
               className="mt-3 text-muted-foreground text-sm md:text-base tracking-widest uppercase"

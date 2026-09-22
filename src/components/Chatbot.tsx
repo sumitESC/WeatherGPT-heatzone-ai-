@@ -922,7 +922,7 @@ export function Chatbot({ contextData }: { contextData: any }) {
 
     setCurrentStatus("Aria AI responding...");
     
-    const systemPrompt = `You are Aria, Chief AI Urban Climate & Heat Risk Advisor for HeatZone AI.
+    const systemPrompt = `You are Aria, Chief AI Urban Climate & Heat Risk Advisor for WeatherGPT.
     IDENTITY: Specialist in urban heat islands, satellite climate metrics (NDVI, NDBI), heat risk scores, 16-day weather forecasts, and heat mitigation across 75+ Uttar Pradesh cities.
     CONTEXT DATA: ${JSON.stringify(contextData)}
 
