@@ -258,7 +258,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               <ul className="space-y-4 text-sm">
                 <li><a href="https://www.linkedin.com/in/sumit-kushwaha" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">LinkedIn</a></li>
                 <li><a href="https://github.com/sumitESC" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">GitHub</a></li>
-                <li><a href="https://wa.me/919125600020" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">WhatsApp</a></li>
+                <li><a href="https://wa.me/918808641293" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">WhatsApp</a></li>
               </ul>
             </div>
 

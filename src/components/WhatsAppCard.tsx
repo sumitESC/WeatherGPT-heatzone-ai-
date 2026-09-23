@@ -1,7 +1,7 @@
 import { Smartphone, ExternalLink, ShieldCheck, Zap } from 'lucide-react';
 import { motion } from "framer-motion";
 
-export default function WhatsAppCard({ whatsappUrl = "https://wa.me/919125600020" }: { whatsappUrl?: string }) {
+export default function WhatsAppCard({ whatsappUrl = "https://wa.me/918808641293" }: { whatsappUrl?: string }) {
   return (
     <section className="py-16 px-4 sm:px-8 max-w-6xl mx-auto w-full text-foreground">
       <div className="bg-card border border-border rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-xl">

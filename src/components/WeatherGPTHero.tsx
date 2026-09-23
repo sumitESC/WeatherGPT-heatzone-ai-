@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
-export default function WeatherGPTHero({ whatsappUrl = "https://wa.me/919125600020" }: { whatsappUrl?: string }) {
+export default function WeatherGPTHero({ whatsappUrl = "https://wa.me/918808641293" }: { whatsappUrl?: string }) {
   const [activePrompt, setActivePrompt] = useState('');
   const weatherGptUrl = "https://weathergpt-q3w1.onrender.com/";
 
