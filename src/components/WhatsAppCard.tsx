@@ -23,7 +23,7 @@ export default function WhatsAppCard({ whatsappUrl = "https://wa.me/918808641293
             <div className="pt-2 flex flex-wrap gap-3 text-xs text-muted-foreground font-mono uppercase tracking-widest">
               <span className="bg-muted px-3 py-1.5 rounded-lg border border-border flex items-center space-x-1.5">
                 <Smartphone className="w-3.5 h-3.5 text-foreground" />
-                <span>WhatsApp: +91 9125600020</span>
+                <span>WhatsApp: +91 8808641293</span>
               </span>
               <span className="bg-muted px-3 py-1.5 rounded-lg border border-border flex items-center space-x-1.5">
                 <Zap className="w-3.5 h-3.5 text-emerald-500" />
@@ -47,7 +47,7 @@ export default function WhatsAppCard({ whatsappUrl = "https://wa.me/918808641293
               <span>Chat on WhatsApp</span>
               <ExternalLink className="w-4 h-4" />
             </a>
-            <span className="text-[11px] text-muted-foreground mt-2 uppercase tracking-widest font-mono">Direct link to +91 9125600020</span>
+            <span className="text-[11px] text-muted-foreground mt-2 uppercase tracking-widest font-mono">Direct link to +91 8808641293</span>
           </div>
         </div>
       </div>
