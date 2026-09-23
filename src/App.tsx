@@ -59,6 +59,11 @@ function Router() {
           <Home />
         </LandingLayout>
       </Route>
+
+      {/* Health check route */}
+      <Route path="/health">
+        {() => "OK"}
+      </Route>
       
       {/* All Dashboard Pages */}
       <Route path="/dashboard*"><DashboardRoutes /></Route>
