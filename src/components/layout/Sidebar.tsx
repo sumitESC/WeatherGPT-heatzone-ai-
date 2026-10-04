@@ -36,7 +36,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             alt="WeatherGPT Logo" 
             className="w-8 h-8 object-contain"
           />
-          <span className="font-display font-bold text-xl tracking-tight text-foreground">Weather<span className="text-primary">GPT</span></span>
+          <span className="font-display font-bold text-xl tracking-tight text-foreground">heatzone<span className="text-primary">AI</span></span>
         </div>
         {/* Close button — only visible on mobile */}
         <button 

@@ -144,7 +144,7 @@ export function LandingLayout({ children }: LandingLayoutProps) {
               className="font-display font-black text-xl tracking-[0.2em] uppercase text-white"
               transition={{ duration: 0.3 }}
             >
-              WeatherGPT
+              heatzoneAI
             </motion.span>
           </Link>
 
