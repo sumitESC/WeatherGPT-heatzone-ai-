@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/🔥_HeatZone_AI-Hackathon_Project-FF6B35?style=for-the-badge&labelColor=1a1a2e" alt="HeatZone AI" />
+  <img src="https://img.shields.io/badge/HeatZone_AI-Hackathon_Project-FF6B35?style=for-the-badge&labelColor=1a1a2e" alt="HeatZone AI" />
 </p>
 
-<h1 align="center">🌡️ HeatZone AI</h1>
+<h1 align="center">HeatZone AI</h1>
 
 <p align="center">
   <strong>AI-Powered Urban Heat Risk Analytics & 30-Day Multi-Horizon Weather Forecasting Platform</strong><br/>
-  <em>Temporal Fusion Transformer • Satellite Intelligence • Real-Time Heat Risk Scoring • GIS Dashboard</em>
+  <em>Temporal Fusion Transformer | Satellite Intelligence | Real-Time Heat Risk Scoring | GIS Dashboard</em>
 </p>
 
 <p align="center">
@@ -21,111 +21,111 @@
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 | Platform | Link |
 |----------|------|
-| 🌐 **HeatZone Dashboard** | [Live on Render](https://weathergpt-q3w1.onrender.com/) |
-| ⚙️ **Backend API (Swagger)** | [API Docs](https://heatzone-backend.onrender.com/docs) |
+| **HeatZone Dashboard** | [Live on Render](https://weathergpt-q3w1.onrender.com/) |
+| **Backend API (Swagger)** | [API Docs](https://heatzone-backend.onrender.com/docs) |
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Problem Statement](#-problem-statement)
-- [Our Solution](#-our-solution)
-- [System Architecture](#-system-architecture)
-- [HeatZone Backend — ML Server](#-heatzone-backend--ml-server)
-- [HeatZone Frontend — Analytics Dashboard](#-heatzone-frontend--analytics-dashboard)
-- [ML Models & Methodology](#-ml-models--methodology)
-- [Dataset & Feature Engineering](#-dataset--feature-engineering)
-- [Results & Validation](#-results--validation)
-- [Tech Stack](#-tech-stack)
-- [Repository Structure](#-repository-structure)
-- [Setup & Installation](#-setup--installation)
-- [API Endpoints](#-api-endpoints)
-- [Team](#-team)
+- [Problem Statement](#problem-statement)
+- [Our Solution](#our-solution)
+- [System Architecture](#system-architecture)
+- [HeatZone Backend — ML Server](#heatzone-backend--ml-server)
+- [HeatZone Frontend — Analytics Dashboard](#heatzone-frontend--analytics-dashboard)
+- [ML Models & Methodology](#ml-models--methodology)
+- [Dataset & Feature Engineering](#dataset--feature-engineering)
+- [Results & Validation](#results--validation)
+- [Tech Stack](#tech-stack)
+- [Repository Structure](#repository-structure)
+- [Setup & Installation](#setup--installation)
+- [API Endpoints](#api-endpoints)
+- [Team](#team)
 
 ---
 
-## 🎯 Problem Statement
+## Problem Statement
 
-India's rapid urbanization is creating **deadly Urban Heat Islands (UHIs)** across cities in Uttar Pradesh. Concrete-heavy infrastructure, shrinking green cover, and rising emissions are driving surface temperatures 5–10°C above surrounding rural areas. **Heatwaves killed over 2,500 people in India in 2023 alone.**
+India's rapid urbanization is creating **deadly Urban Heat Islands (UHIs)** across cities in Uttar Pradesh. Concrete-heavy infrastructure, shrinking green cover, and rising emissions are driving surface temperatures 5-10 C above surrounding rural areas. **Heatwaves killed over 2,500 people in India in 2023 alone.**
 
 Current challenges:
-- ❌ No city-level heat risk scoring system exists for UP's 75 districts
-- ❌ Weather forecasts are limited to 7 days — inadequate for agricultural & urban planning
-- ❌ Satellite data (NDVI, NDBI, LST) is siloed and not integrated with weather models
-- ❌ No platform combines ML forecasting with real-time heat vulnerability analytics
+- No city-level heat risk scoring system exists for UP's 75 districts
+- Weather forecasts are limited to 7 days — inadequate for agricultural & urban planning
+- Satellite data (NDVI, NDBI, LST) is siloed and not integrated with weather models
+- No platform combines ML forecasting with real-time heat vulnerability analytics
 
 **HeatZone AI was built to fix this.**
 
 ---
 
-## 💡 Our Solution
+## Our Solution
 
 HeatZone AI is a **full-stack AI platform** consisting of two core modules:
 
-### 🐍 `heatzone-backend` — The ML Intelligence Engine
+### `heatzone-backend` — The ML Intelligence Engine
 A FastAPI server that runs a custom **~15M parameter Temporal Fusion Transformer (TFT)** trained on **26 years of ERA5 reanalysis data + Sentinel-2 satellite imagery**. It generates **30-day (720-hour) multi-variable weather forecasts** and computes proprietary **Heat Risk Scores (0-100)** for every city.
 
-### ⚛️ `heatzone-frontend` — The Analytics Dashboard
+### `heatzone-frontend` — The Analytics Dashboard
 A production React 18 application providing **interactive GIS maps, multi-horizon forecast explorers, satellite telemetry visualizations**, and city-level heat vulnerability analytics — enabling disaster managers, urban planners, and agricultural officers to make data-driven decisions.
 
 ```
- ┌─────────────────────────────────────────────────────────────┐
- │                   heatzone-frontend                         │
- │          React 18 + Vite + TypeScript + Tailwind            │
- │                                                             │
- │  ┌──────────┐ ┌───────────┐ ┌──────────┐ ┌──────────────┐  │
- │  │Dashboard │ │ Forecast  │ │ GIS Map  │ │ City Detail  │  │
- │  │75 Cities │ │ 30-Day    │ │ Leaflet  │ │ Satellite    │  │
- │  │Risk Grid │ │ Explorer  │ │ Heatmap  │ │ Analytics    │  │
- │  └────┬─────┘ └─────┬─────┘ └────┬─────┘ └──────┬───────┘  │
- │       └──────────────┼───────────┼───────────────┘          │
- └──────────────────────┼───────────┼──────────────────────────┘
-                        │  REST API │
- ┌──────────────────────▼───────────▼──────────────────────────┐
- │                    heatzone-backend                          │
- │              FastAPI + PyTorch + ML Models                   │
- │                                                              │
- │  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  │
- │  │ Data Pipeline │  │  TFT Model   │  │ Heat Risk Engine  │  │
- │  │ Open-Meteo    │  │  ~15M params │  │ RF + GradBoost    │  │
- │  │ Sentinel-2    │  │  720hr fcast │  │ Score 0-100       │  │
- │  │ ERA5 (26 yrs) │  │  35 variables│  │ R² = 0.977        │  │
- │  └──────────────┘  └──────────────┘  └───────────────────┘  │
- └─────────────────────────────────────────────────────────────┘
+ +-------------------------------------------------------------+
+ |                   heatzone-frontend                          |
+ |          React 18 + Vite + TypeScript + Tailwind             |
+ |                                                              |
+ |  +----------+ +-----------+ +----------+ +--------------+   |
+ |  |Dashboard | | Forecast  | | GIS Map  | | City Detail  |   |
+ |  |75 Cities | | 30-Day    | | Leaflet  | | Satellite    |   |
+ |  |Risk Grid | | Explorer  | | Heatmap  | | Analytics    |   |
+ |  +----+-----+ +-----+-----+ +----+-----+ +------+-------+   |
+ |       +-------------------+------+---------------+           |
+ +---------------------------+------+--------------------------+
+                             | REST API
+ +---------------------------v------v--------------------------+
+ |                    heatzone-backend                          |
+ |              FastAPI + PyTorch + ML Models                   |
+ |                                                              |
+ |  +--------------+  +--------------+  +-------------------+   |
+ |  | Data Pipeline |  |  TFT Model   |  | Heat Risk Engine  |  |
+ |  | Open-Meteo    |  |  ~15M params |  | RF + GradBoost    |  |
+ |  | Sentinel-2    |  |  720hr fcast |  | Score 0-100       |  |
+ |  | ERA5 (26 yrs) |  |  35 variables|  | R2 = 0.977        |  |
+ |  +--------------+  +--------------+  +-------------------+   |
+ +-------------------------------------------------------------+
 ```
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
-                    ┌──────────────────────────┐
-                    │    FastAPI REST Server    │
-                    │      (server.py)         │
-                    └─────────┬────────────────┘
-                              │
-            ┌─────────────────┼─────────────────┐
-            ▼                 ▼                 ▼
-   ┌────────────┐    ┌──────────────┐    ┌───────────┐
-   │  Data      │    │   ML Models  │    │    API    │
-   │  Pipeline  │    │  Inference   │    │  Routers  │
-   └─────┬──────┘    └──────┬───────┘    └─────┬─────┘
-         │                  │                  │
-  ┌──────┴──────┐    ┌──────┴──────────┐   ┌───┴────────────────┐
-  │ Open-Meteo  │    │ TFT Forecaster  │   │ /forecast/{city}   │
-  │ Sentinel-2  │    │ Heatwave RF     │   │ /history/{city}    │
-  │ ERA5 (past) │    │ XGBoost Fallback│   │ /weather/{city}    │
-  └─────────────┘    └─────────────────┘   │ /live-update       │
-                                           └────────────────────┘
+                    +----------------------------+
+                    |    FastAPI REST Server      |
+                    |      (server.py)            |
+                    +-----------+----------------+
+                                |
+            +-------------------+-------------------+
+            v                   v                   v
+   +--------------+    +----------------+    +-------------+
+   |  Data        |    |   ML Models    |    |    API      |
+   |  Pipeline    |    |  Inference     |    |  Routers    |
+   +------+-------+    +-------+--------+    +------+------+
+          |                     |                    |
+  +-------+-------+    +-------+----------+   +-----+------------------+
+  | Open-Meteo    |    | TFT Forecaster   |   | /forecast/{city}       |
+  | Sentinel-2    |    | Heatwave RF      |   | /history/{city}        |
+  | ERA5 (past)   |    | XGBoost Fallback |   | /weather/{city}        |
+  +---------------+    +------------------+   | /live-update           |
+                                              +------------------------+
 ```
 
 ---
 
-## 🐍 HeatZone Backend — ML Server
+## HeatZone Backend — ML Server
 
 The backend is the **core computational engine** of HeatZone AI. It is responsible for serving multi-horizon numerical forecasts, executing data ingestion pipelines, computing heat risk scores, and serving meteorological intelligence via RESTful APIs.
 
@@ -134,7 +134,7 @@ The backend is the **core computational engine** of HeatZone AI. It is responsib
 | Capability | Description |
 |-----------|-------------|
 | **30-Day Forecasting** | Generates 720-hour multi-variable predictions using the TFT model |
-| **Heat Risk Scoring** | Computes city-level Heat Risk Score (0-100) with zone classification (🟢🟡🟠🔴) |
+| **Heat Risk Scoring** | Computes city-level Heat Risk Score (0-100) with zone classification (LOW / MODERATE / HIGH / EXTREME) |
 | **Live Data Ingestion** | CRON-based pipelines fetching real-time data from Open-Meteo for 75+ cities |
 | **Satellite Processing** | Ingests Sentinel-2 L2A indices (NDVI, NDWI, NDBI, SAVI, BSI, Albedo) via STAC API |
 | **Model Inference** | Serves PyTorch TFT model weights with configurable batch inference |
@@ -207,57 +207,57 @@ Heat Risk Score = f(
 
 | Zone | Score Range | Meaning |
 |------|:-----------:|---------|
-| 🟢 **LOW** | 0 – 25 | Safe conditions, adequate green cover |
-| 🟡 **MODERATE** | 25 – 50 | Elevated risk, monitor vulnerable populations |
-| 🟠 **HIGH** | 50 – 75 | Dangerous, advisory for outdoor workers |
-| 🔴 **EXTREME** | 75 – 100 | Severe heat emergency, immediate intervention needed |
+| **LOW** | 0 - 25 | Safe conditions, adequate green cover |
+| **MODERATE** | 25 - 50 | Elevated risk, monitor vulnerable populations |
+| **HIGH** | 50 - 75 | Dangerous, advisory for outdoor workers |
+| **EXTREME** | 75 - 100 | Severe heat emergency, immediate intervention needed |
 
 ---
 
-## ⚛️ HeatZone Frontend — Analytics Dashboard
+## HeatZone Frontend — Analytics Dashboard
 
 The frontend is a **production-grade React 18 application** that serves as the visual analytics layer, consuming data from the HeatZone ML API to provide interactive insights for stakeholders.
 
 ### Dashboard Pages
 
-#### 1. 📊 Dashboard (`Dashboard.tsx`)
+#### 1. Dashboard (`Dashboard.tsx`)
 The main overview showing **75 city cards** with:
-- Live heat risk scores (0-100) with color-coded zone badges (🟢🟡🟠🔴)
+- Live heat risk scores (0-100) with color-coded zone badges
 - Current temperature readings from Open-Meteo
 - Active severe weather alerts based on TFT forecast thresholds
 - Search and filter capabilities across all UP districts
 
-#### 2. 📈 30-Day Forecast Explorer (`Forecast.tsx`)
+#### 2. 30-Day Forecast Explorer (`Forecast.tsx`)
 Dedicated visualization for TFT model outputs:
 - **Multi-horizon area charts** displaying 720 hours of predictions for Temperature, Precipitation, Humidity, Wind Speed, UV Index
 - **Quantile uncertainty bands** showing P10/P50/P90 probabilistic bounds — uncertainty widens as the horizon extends, which is scientifically accurate
 - **Variable comparison** across multiple weather parameters
 
-#### 3. 🏙️ City Detail (`CityDetail.tsx`)
+#### 3. City Detail (`CityDetail.tsx`)
 Deep-dive analytics for a single city including:
 - **Satellite Telemetry Panel**: Displays Sentinel-2 indices — NDVI (vegetation), NDWI (water), NDBI (built-up) — used as static features by the TFT model
 - **Heat Risk Decomposition**: Breaks down the score into primary drivers (e.g., "Concrete Density contributed 23 points", "Vegetation Scarcity penalized by 15 points")
 - **7-day hourly forecast timeline** with detailed metrics
 
-#### 4. 🗺️ Interactive GIS Map (`MapPage.tsx`)
+#### 4. Interactive GIS Map (`MapPage.tsx`)
 React-Leaflet geospatial visualization:
 - **Heat risk heatmap overlay** across Uttar Pradesh with color-coded city markers
 - **Click-to-navigate**: Pins link directly to City Detail views
 - **Layer toggles**: Switch between temperature, heat risk, precipitation, and satellite overlays
 
-#### 5. 📜 Historical Trends (`History.tsx`)
+#### 5. Historical Trends (`History.tsx`)
 ERA5 climate analysis:
-- **26-year historical climate trends** per city (2000–2026)
+- **26-year historical climate trends** per city (2000-2026)
 - **Year-over-year temperature anomaly tracking**
 - **Seasonal pattern visualization** for agricultural planning
 
-#### 6. 📋 Analytics (`Analytics.tsx`)
+#### 6. Analytics (`Analytics.tsx`)
 Aggregated analytics across all 75 cities:
 - **Statewide heat risk distribution** charts
 - **Top-10 most vulnerable cities** ranked by heat risk score
 - **Satellite index comparisons** across districts
 
-#### 7. 🌾 Agricultural Advisor (`Advisor.tsx`)
+#### 7. Agricultural Advisor (`Advisor.tsx`)
 Decision support for agricultural stakeholders:
 - **Crop-specific weather advisories** based on 30-day forecasts
 - **Irrigation scheduling recommendations** using precipitation probability timelines
@@ -277,7 +277,7 @@ Decision support for agricultural stakeholders:
 
 ---
 
-## 🤖 ML Models & Methodology
+## ML Models & Methodology
 
 ### 1. Temporal Fusion Transformer (TFT) — Primary Forecaster
 
@@ -290,12 +290,12 @@ The TFT is the backbone of HeatZone's forecasting engine. It was specifically ch
 |--------------|-------|
 | **Architecture** | Temporal Fusion Transformer |
 | **Trainable Parameters** | ~15M+ |
-| **Training Data** | 5 GB — 26 years hourly ERA5 + Sentinel-2 (2000–2026) |
+| **Training Data** | 5 GB — 26 years hourly ERA5 + Sentinel-2 (2000-2026) |
 | **Total Records** | 15,234,800 hourly rows across 75 cities |
 | **Lookback Window** | 168 hours (7 days of historical context) |
 | **Forecast Horizon** | 720 hours (30 days into the future) |
 | **Input Features** | 78 total (59 Weather + 13 Satellite/Terrain + 6 Cyclic Temporal) |
-| **Output** | 35 weather variables × 720 timesteps × 3 quantiles |
+| **Output** | 35 weather variables x 720 timesteps x 3 quantiles |
 | **d_model** | 128 (local) / 192 (Colab) |
 | **Attention Heads** | 4 (local) / 6 (Colab) |
 | **LSTM Layers** | 2 |
@@ -318,7 +318,7 @@ The TFT is the backbone of HeatZone's forecasting engine. It was specifically ch
 #### Prediction Targets (35 Variables)
 
 - **Thermal**: Temperature, Dewpoint, Apparent Temp, Wet Bulb Globe Temperature
-- **Hydrological**: Humidity, Precipitation, Rain Probability, ET₀, Vapour Pressure Deficit
+- **Hydrological**: Humidity, Precipitation, Rain Probability, ET0, Vapour Pressure Deficit
 - **Pressure & Wind**: MSL Pressure, Wind Speed (10m, 80m, 100m, 120m, 180m), Wind Direction, Gusts
 - **Solar & Storm**: Shortwave Radiation, UV Index, CAPE (Convective Available Potential Energy)
 - **Soil**: Soil Temperature & Moisture at 4 depths (0-7cm, 7-28cm, 28-100cm, 100-255cm)
@@ -329,10 +329,10 @@ The TFT is the backbone of HeatZone's forecasting engine. It was specifically ch
 |--------------|-------|
 | **Algorithm** | VotingRegressor (Gradient Boosting + Random Forest) |
 | **Input Features** | 19 (NDVI, NDWI, NDBI, emissions, LST, population density, etc.) |
-| **Validation R²** | **0.9771** |
+| **Validation R2** | **0.9771** |
 | **MAE** | 0.81 points (on 0-100 scale) |
 | **RMSE** | 1.05 points |
-| **Output** | Heat Risk Score (0-100) + Zone (🟢🟡🟠🔴) + Causal Explanation |
+| **Output** | Heat Risk Score (0-100) + Zone (LOW / MODERATE / HIGH / EXTREME) + Causal Explanation |
 
 ### 3. Satellite-Based Prediction Model
 
@@ -346,22 +346,22 @@ A lightweight gradient boosting model that provides rapid predictions when TFT i
 
 ---
 
-## 📊 Dataset & Feature Engineering
+## Dataset & Feature Engineering
 
 ### Data Sources
 
 | Source | Type | Temporal Coverage | Variables |
 |--------|------|-------------------|-----------|
-| **ERA5 Reanalysis** (Copernicus CDS) | Historical atmospheric | 2000–2026 (26 years) | 6 core reanalysis variables |
-| **Open-Meteo Historical** | Hourly weather archives | 2000–2026 | 59 granular weather variables |
-| **Sentinel-2 L2A** (Microsoft Planetary Computer) | Satellite imagery | Per-city snapshots | 5 spectral bands → 7 derived indices |
+| **ERA5 Reanalysis** (Copernicus CDS) | Historical atmospheric | 2000-2026 (26 years) | 6 core reanalysis variables |
+| **Open-Meteo Historical** | Hourly weather archives | 2000-2026 | 59 granular weather variables |
+| **Sentinel-2 L2A** (Microsoft Planetary Computer) | Satellite imagery | Per-city snapshots | 5 spectral bands -> 7 derived indices |
 | **Copernicus DEM GLO-30** | Digital Elevation Model | Static | Elevation per city grid |
 
 ### Dataset Scale
 
 | Metric | Value |
 |--------|-------|
-| **Temporal Span** | January 1, 2000 → September 20, 2026 |
+| **Temporal Span** | January 1, 2000 to September 20, 2026 |
 | **Resolution** | Hourly |
 | **Spatial Coverage** | 75 cities across Uttar Pradesh |
 | **Total Records** | **15,234,800** hourly rows |
@@ -387,11 +387,11 @@ A lightweight gradient boosting model that provides rapid predictions when TFT i
 
 ---
 
-## 📊 Results & Validation
+## Results & Validation
 
 ### Multi-Horizon Forecast Accuracy (Temperature)
 
-| Horizon | TFT MAE (°C) | TFT RMSE | Baseline MAE (°C) | Improvement |
+| Horizon | TFT MAE (C) | TFT RMSE | Baseline MAE (C) | Improvement |
 |---------|:------------:|:--------:|:------------------:|:-----------:|
 | **24 Hours (Day 1)** | 1.12 | 1.45 | 2.30 | **+51.3%** |
 | **72 Hours (Day 3)** | 1.85 | 2.21 | 3.15 | **+41.2%** |
@@ -405,7 +405,7 @@ A lightweight gradient boosting model that provides rapid predictions when TFT i
 
 | Metric | Value | Interpretation |
 |--------|:-----:|----------------|
-| **R²** | **0.977** | Captures 97.7% of variance in heat risk |
+| **R2** | **0.977** | Captures 97.7% of variance in heat risk |
 | **MAE** | 0.81 | Less than 1 point error on 0-100 scale |
 | **RMSE** | 1.05 | Extremely tight predictions |
 
@@ -450,26 +450,26 @@ A lightweight gradient boosting model that provides rapid predictions when TFT i
 
 ---
 
-## 🎯 Target Use Cases
+## Target Use Cases
 
 | Stakeholder | How HeatZone Helps |
 |-------------|--------------------|
-| 🏙️ **Urban Planners** | Identify heat-vulnerable zones using NDBI/NDVI decomposition. Quantify the cooling impact of adding green corridors |
-| 🚨 **Disaster Managers** | Monitor 75 cities in real-time. Get 30-day advance warning of heatwave events via TFT forecasts |
-| 🌾 **Agricultural Officers** | 30-day precipitation timelines for irrigation planning. Fertilizer application windows based on wind/rain predictions |
-| 🏥 **Public Health** | Heat risk zone alerts for hospitals and emergency services. Track vulnerable districts approaching EXTREME (75+) scores |
-| 🏗️ **Infrastructure** | Soil temperature forecasts at 4 depths for construction planning. Wind speed predictions at multiple heights for structural assessments |
+| **Urban Planners** | Identify heat-vulnerable zones using NDBI/NDVI decomposition. Quantify the cooling impact of adding green corridors |
+| **Disaster Managers** | Monitor 75 cities in real-time. Get 30-day advance warning of heatwave events via TFT forecasts |
+| **Agricultural Officers** | 30-day precipitation timelines for irrigation planning. Fertilizer application windows based on wind/rain predictions |
+| **Public Health** | Heat risk zone alerts for hospitals and emergency services. Track vulnerable districts approaching EXTREME (75+) scores |
+| **Infrastructure** | Soil temperature forecasts at 4 depths for construction planning. Wind speed predictions at multiple heights for structural assessments |
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 WeatherGPT-heatzone-ai/
-│
+|
 ├── README.md                          # This file
-│
-├── heatzone-backend/                  # 🐍 FastAPI ML Server
+|
+├── heatzone-backend/                  # FastAPI ML Server
 │   ├── server.py                      # Uvicorn entry point
 │   ├── config.py                      # Global configuration
 │   ├── requirements.txt               # Python dependencies
@@ -489,8 +489,8 @@ WeatherGPT-heatzone-ai/
 │       ├── sat_model/                 # Satellite-based neural network
 │       ├── xgboost/                   # XGBoost fallback forecaster
 │       └── predictions/               # Cached CSV prediction outputs
-│
-└── heatzone-frontend/                 # ⚛️ React Analytics Dashboard
+|
+└── heatzone-frontend/                 # React Analytics Dashboard
     ├── index.html                     # Entry point
     ├── package.json                   # Node dependencies
     ├── vite.config.ts                 # Vite configuration
@@ -521,7 +521,7 @@ WeatherGPT-heatzone-ai/
 
 ---
 
-## ⚡ Setup & Installation
+## Setup & Installation
 
 ### Prerequisites
 
@@ -581,7 +581,7 @@ Both services are configured for **Render.com**:
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -593,7 +593,7 @@ Both services are configured for **Render.com**:
 
 ---
 
-## 📚 References
+## References
 
 1. Lim, B., et al. (2021). *Temporal Fusion Transformers for interpretable multi-horizon time series forecasting*. International Journal of Forecasting, 37(4), 1748-1764.
 2. Hersbach, H., et al. (2020). *The ERA5 global reanalysis*. Quarterly Journal of the Royal Meteorological Society, 146(730), 1999-2049.
@@ -603,15 +603,15 @@ Both services are configured for **Render.com**:
 
 ---
 
-## 👨‍💻 Team
+## Team
 
 **Sumit Kushwaha**
-- 📧 Email: [iamkussumit@gmail.com](mailto:iamkussumit@gmail.com)
-- 📞 Contact: +91 9616550356
+- Email: [iamkussumit@gmail.com](mailto:iamkussumit@gmail.com)
+- Contact: +91 9616550356
 
 ---
 
 <p align="center">
-  <strong>Built with ❤️ for Smart India Hackathon 2026</strong><br/>
+  <strong>Built for Smart India Hackathon 2026</strong><br/>
   <em>HeatZone AI — Protecting communities from extreme heat through data-driven intelligence</em>
 </p>
